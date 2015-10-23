@@ -3992,6 +3992,15 @@ class Instruction(object):
         This class represents a dalvik instruction
     """
 
+    def __init__(self):
+            self.idx = -1
+
+    def get_idx(self):
+            return self.idx
+
+    def set_idx(self, idx):
+            self.idx = idx
+
     def get_kind(self):
         """
             Return the 'kind' argument of the instruction
@@ -6430,6 +6439,7 @@ class LinearSweepAlgorithm(object):
 
             # emit instruction
             yield obj
+            obj.set_idx(idx)
             idx = idx + obj.get_length()
 
 
