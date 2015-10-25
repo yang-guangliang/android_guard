@@ -6439,7 +6439,12 @@ class LinearSweepAlgorithm(object):
 
             # emit instruction
             yield obj
-            obj.set_idx(idx)
+
+            if not isinstance(obj, Instruction):
+                    print obj.__class__.__name__
+            else:
+                obj.set_idx(idx)
+
             idx = idx + obj.get_length()
 
 
