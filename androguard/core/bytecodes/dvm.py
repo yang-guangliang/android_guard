@@ -4142,7 +4142,7 @@ class InstructionInvalid(Instruction):
         return pack("=H", self.OP)
 
 
-class FillArrayData(object):
+class FillArrayData(Instruction):
     """
         This class can parse a FillArrayData instruction
 
@@ -4258,7 +4258,7 @@ class FillArrayData(object):
             "=I", self.size) + self.data
 
 
-class SparseSwitch(object):
+class SparseSwitch(Instruction):
     """
         This class can parse a SparseSwitch instruction
 
@@ -4382,7 +4382,7 @@ class SparseSwitch(object):
                                                    for i in self.targets)
 
 
-class PackedSwitch(object):
+class PackedSwitch(Instruction):
     """
         This class can parse a PackedSwitch instruction
 
@@ -6453,13 +6453,10 @@ class LinearSweepAlgorithm(object):
                 op_value = unpack('=B', insn[idx])[0]
                 obj = get_instruction(cm, op_value, insn[idx:], self.odex)
 
+            obj.set_idx(idx)
+
             # emit instruction
             yield obj
-
-            if not isinstance(obj, Instruction):
-                    print obj.__class__.__name__
-            else:
-                obj.set_idx(idx)
 
             idx = idx + obj.get_length()
 

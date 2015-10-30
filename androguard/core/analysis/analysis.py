@@ -751,6 +751,7 @@ class newVMAnalysis(object):
 
                         elif ((op_value >= 0x6e and op_value <= 0x72) or
                               (op_value >= 0x74 and op_value <= 0x78)):
+                            # invocations
                             idx_meth = instruction.get_ref_kind()
                             method_info = last_vm.get_cm_method(idx_meth)
                             if method_info:
