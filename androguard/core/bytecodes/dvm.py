@@ -3944,7 +3944,8 @@ def get_kind(cm, kind, value):
     :rtype: string
     """
 
-    if not PRINT_INSTRUCTION_FLAG:
+    global PRINT_INSTRUCTION_DETAILS_FLAG
+    if not PRINT_INSTRUCTION_DETAILS_FLAG:
             return ""
 
     if kind == KIND_METH:
@@ -4740,6 +4741,21 @@ class Instruction21c(Instruction):
     def get_raw(self):
         return pack("=HH", (self.AA << 8) | self.OP, self.BBBB)
 
+class ConstString(Instruction21c):
+    """Simulate a const-string instruction."""
+
+    def __init__(self, orig_ins, value):
+        self.OP = orig_ins.OP
+        self.AA = orig_ins.AA
+        self.BBBB = orig_ins.BBBB
+        self.cm = orig_ins.cm
+        self.value = value
+
+    def get_raw_string(self):
+        return self.value
+
+    def get_operands(self):
+        return [(0, 1), (257, 2113, "'%s'" % self.value)]
 
 class Instruction21s(Instruction):
     """

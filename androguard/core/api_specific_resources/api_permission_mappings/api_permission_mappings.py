@@ -1,13 +1,23 @@
-import androguard.core.api_specific_resources.api_permission_mappings.api_permission_mappings_api9 as api9
-import androguard.core.api_specific_resources.api_permission_mappings.api_permission_mappings_api10 as api10
-import androguard.core.api_specific_resources.api_permission_mappings.api_permission_mappings_api14 as api14
-import androguard.core.api_specific_resources.api_permission_mappings.api_permission_mappings_api15 as api15
-import androguard.core.api_specific_resources.api_permission_mappings.api_permission_mappings_api16 as api16
-import androguard.core.api_specific_resources.api_permission_mappings.api_permission_mappings_api17 as api17
-import androguard.core.api_specific_resources.api_permission_mappings.api_permission_mappings_api18 as api18
-import androguard.core.api_specific_resources.api_permission_mappings.api_permission_mappings_api19 as api19
-import androguard.core.api_specific_resources.api_permission_mappings.api_permission_mappings_api21 as api21
+# import androguard.core.api_specific_resources.api_permission_mappings.api_permission_mappings_api9 as api9
+# import androguard.core.api_specific_resources.api_permission_mappings.api_permission_mappings_api10 as api10
+# import androguard.core.api_specific_resources.api_permission_mappings.api_permission_mappings_api14 as api14
+# import androguard.core.api_specific_resources.api_permission_mappings.api_permission_mappings_api15 as api15
+# import androguard.core.api_specific_resources.api_permission_mappings.api_permission_mappings_api16 as api16
+# import androguard.core.api_specific_resources.api_permission_mappings.api_permission_mappings_api17 as api17
+# import androguard.core.api_specific_resources.api_permission_mappings.api_permission_mappings_api18 as api18
+# import androguard.core.api_specific_resources.api_permission_mappings.api_permission_mappings_api19 as api19
+# import androguard.core.api_specific_resources.api_permission_mappings.api_permission_mappings_api21 as api21
 import androguard.core.api_specific_resources.api_permission_mappings.api_permission_mappings_api22 as api22
+
+api9 = api22
+api10 = api22
+api14 = api22
+api15 = api22
+api16 = api22
+api17 = api22
+api18 = api22
+api19 = api22
+api21 = api22
 
 AOSP_PERMISSIONS_MAPPINGS = {
     "9": {
