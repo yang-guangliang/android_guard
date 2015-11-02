@@ -48,6 +48,8 @@ class DVMBasicBlock(object):
 
         self.notes = []
 
+        self.instructions = []
+
     def get_notes(self):
         return self.notes
 
@@ -65,15 +67,18 @@ class DVMBasicBlock(object):
         Get all instructions from a basic block.
 
         :rtype: Return all instructions in the current basic block
-      """
-        tmp_ins = []
+        """
+        if len(self.instructions) != 0:
+                return self.instructions
+
+        self.instructions = []
         idx = 0
         for i in self.method.get_instructions():
             if idx >= self.start and idx < self.end:
-                tmp_ins.append(i)
+                self.instructions.append(i)
 
             idx += i.get_length()
-        return tmp_ins
+        return self.instructions
 
     def get_nb_instructions(self):
         return self.nb_instructions
@@ -140,11 +145,12 @@ class DVMBasicBlock(object):
         self.last_length = i.get_length()
         self.end += self.last_length
 
-        op_value = i.get_op_value()
+        self.instructions.append(i)
+        # op_value = i.get_op_value()
 
-        if op_value == 0x26 or (op_value >= 0x2b and op_value <= 0x2c):
-            code = self.method.get_code().get_bc()
-            self.special_ins[idx] = code.get_ins_off(idx + i.get_ref_off() * 2)
+        # if op_value == 0x26 or (op_value >= 0x2b and op_value <= 0x2c):
+        #     code = self.method.get_code().get_bc()
+        #     self.special_ins[idx] = code.get_ins_off(idx + i.get_ref_off() * 2)
 
     def get_special_ins(self, idx):
         """
@@ -154,10 +160,10 @@ class DVMBasicBlock(object):
 
             :rtype: None or an Instruction
         """
-        try:
-            return self.special_ins[idx]
-        except:
-            return None
+        # try:
+        #     return self.special_ins[idx]
+        # except:
+        return None
 
     def get_exception_analysis(self):
         return self.exception_analysis
@@ -373,9 +379,10 @@ class Exceptions(object):
             yield i
 
 
-BasicOPCODES = []
-for i in dvm.BRANCH_DVM_OPCODES:
-    BasicOPCODES.append(re.compile(i))
+# BasicOPCODES = []
+# for i in dvm.BRANCH_DVM_OPCODES:
+#     BasicOPCODES.append(re.compile(i))
+BasicOPCODES = dvm.BRANCH_DVM_OPCODES
 
 
 class MethodAnalysis(object):
@@ -410,14 +417,13 @@ class MethodAnalysis(object):
         debug("Parsing instructions")
         instructions = [i for i in bc.get_instructions()]
         for i in instructions:
-            for j in BasicOPCODES:
-                if j.match(i.get_name()) != None:
-                    v = dvm.determineNext(i, idx, self.method)
-                    h[idx] = v
-                    l.extend(v)
-                    break
+                if i.get_name() in BasicOPCODES:
+                        v = dvm.determineNext(i, idx, self.method)
+                        h[idx] = v
+                        l.extend(v)
+                        break
 
-            idx += i.get_length()
+                idx += i.get_length()
 
         debug("Parsing exceptions")
         excepts = dvm.determineException(self.__vm, self.method)

@@ -83,6 +83,47 @@ TYPE_DESCRIPTOR = {
     'D': 'double',
 }
 
+MATH_DVM_OPCODES = {
+    "add.": '+',
+    "div.": '/',
+    "mul.": '*',
+    "or.": '|',
+    "sub.": '-',
+    "and.": '&',
+    "xor.": '^',
+    "shl.": "<<",
+    "shr.": ">>",
+}
+
+# FIELD_READ_DVM_OPCODES = [".get"]
+# FIELD_WRITE_DVM_OPCODES = [".put"]
+# BREAK_DVM_OPCODES = ["invoke.", "move.", ".put", "if."]
+
+# BRANCH_DVM_OPCODES = ["throw", "throw.", "if.", "goto", "goto.", "return", "return.", "packed-switch$", "sparse-switch$"]
+BRANCH_DVM_OPCODES = set(["throw",
+                          "if-eq", "if-ne", "if-lt", "if-ge", "if-gt", "if-le",
+                          "if-eqz", "if-nez", "if-ltz", "if-gez", "if-gtz", "if-lez",
+                          "goto", "goto/16", "goto/32",
+                          "return-void", "return", "return-wide", "return-object",
+                          "packed-switch", "sparse-switch"])
+
+PRINT_INSTRUCTION_DETAILS_FLAG  = False
+
+KIND_METH = 0
+KIND_STRING = 1
+KIND_FIELD = 2
+KIND_TYPE = 3
+VARIES = 4
+INLINE_METHOD = 5
+VTABLE_OFFSET = 6
+FIELD_OFFSET = 7
+KIND_RAW_STRING = 8
+
+OPERAND_REGISTER = 0
+OPERAND_LITERAL = 1
+OPERAND_RAW = 2
+OPERAND_OFFSET = 3
+OPERAND_KIND = 0x100
 
 class Error(Exception):
     """Base class for exceptions in this module."""
@@ -129,27 +170,6 @@ def get_type(atype, size=None):
         else:
             res = atype
     return res
-
-
-MATH_DVM_OPCODES = {
-    "add.": '+',
-    "div.": '/',
-    "mul.": '*',
-    "or.": '|',
-    "sub.": '-',
-    "and.": '&',
-    "xor.": '^',
-    "shl.": "<<",
-    "shr.": ">>",
-}
-
-FIELD_READ_DVM_OPCODES = [".get"]
-FIELD_WRITE_DVM_OPCODES = [".put"]
-
-BREAK_DVM_OPCODES = ["invoke.", "move.", ".put", "if."]
-
-BRANCH_DVM_OPCODES = ["throw", "throw.", "if.", "goto", "goto.", "return",
-                      "return.", "packed-switch$", "sparse-switch$"]
 
 
 def clean_name_instruction(instruction):
@@ -2830,9 +2850,9 @@ class EncodedMethod(object):
         self.access_flags_string = None
         self.notes = []
 
-
-        # to save annotations in the future
-        self.annotation = None
+        # to be used in the future
+        self.annotation = None     # to save the annotation
+        self.real_invocations = {} # to save all real invocation of `invoke-virtual`
 
 
     def adjust_idx(self, val):
@@ -3911,26 +3931,7 @@ class EncodedCatchHandlerList(object):
         return length
 
 
-KIND_METH = 0
-KIND_STRING = 1
-KIND_FIELD = 2
-KIND_TYPE = 3
-VARIES = 4
-INLINE_METHOD = 5
-VTABLE_OFFSET = 6
-FIELD_OFFSET = 7
-KIND_RAW_STRING = 8
-
-OPERAND_REGISTER = 0
-OPERAND_LITERAL = 1
-OPERAND_RAW = 2
-OPERAND_OFFSET = 3
-OPERAND_KIND = 0x100
-
-
-PRINT_INSTRUCTION_DETAILS_FLAG  = False
-
-def get_kind(cm, kind, value):
+def get_kind(cm, kind, value, flag = PRINT_INSTRUCTION_DETAILS_FLAG):
     """
     Return the value of the 'kind' argument
 
@@ -3944,8 +3945,7 @@ def get_kind(cm, kind, value):
     :rtype: string
     """
 
-    global PRINT_INSTRUCTION_DETAILS_FLAG
-    if not PRINT_INSTRUCTION_DETAILS_FLAG:
+    if not flag:
             return ""
 
     if kind == KIND_METH:
@@ -4530,6 +4530,8 @@ class Instruction35c(Instruction):
         self.D = (i16 >> 4) & 0xf
         self.E = (i16 >> 8) & 0xf
         self.F = (i16 >> 12) & 0xf
+
+        self.real_invocation_clazz = None
 
     def get_output(self, idx=-1):
         buff = ""
@@ -6458,7 +6460,7 @@ class LinearSweepAlgorithm(object):
             # emit instruction
             yield obj
 
-            idx = idx + obj.get_length()
+            idx += obj.get_length()
 
 
 class DCode(object):
