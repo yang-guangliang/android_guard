@@ -107,7 +107,7 @@ BRANCH_DVM_OPCODES = set(["throw",
                           "return-void", "return", "return-wide", "return-object",
                           "packed-switch", "sparse-switch"])
 
-PRINT_INSTRUCTION_DETAILS_FLAG  = False
+PRINT_INSTRUCTION_DETAILS_FLAG  = True
 
 KIND_METH = 0
 KIND_STRING = 1
@@ -2441,6 +2441,8 @@ class MethodIdItem(object):
         self.proto_idx_value = None
         self.name_idx_value = None
 
+        self.code = None
+
     def reload(self):
         self.class_idx_value = self.CM.get_type(self.class_idx)
         self.proto_idx_value = self.CM.get_proto(self.proto_idx)
@@ -2854,6 +2856,8 @@ class EncodedMethod(object):
         self.annotation = None     # to save the annotation
         self.real_invocations = {} # to save all real invocation of `invoke-virtual`
 
+    def get_vm(self):
+            return self.CM.vm
 
     def adjust_idx(self, val):
         self.method_idx = self.method_idx_diff + val
@@ -3995,6 +3999,7 @@ class Instruction(object):
 
     def __init__(self):
             self.idx = -1
+            self.cm = None
 
     def get_idx(self):
             return self.idx
