@@ -108,6 +108,7 @@ BRANCH_DVM_OPCODES = set(["throw",
                           "packed-switch", "sparse-switch"])
 
 PRINT_INSTRUCTION_DETAILS_FLAG  = True
+IS_STATIC_DEFAULT               = False
 
 KIND_METH = 0
 KIND_STRING = 1
@@ -2441,7 +2442,9 @@ class MethodIdItem(object):
         self.proto_idx_value = None
         self.name_idx_value = None
 
+        # These will be used in the future
         self.code = None
+        self.is_state = IS_STATIC_DEFAULT
 
     def reload(self):
         self.class_idx_value = self.CM.get_type(self.class_idx)
@@ -2853,6 +2856,7 @@ class EncodedMethod(object):
         self.notes = []
 
         # to be used in the future
+        self.is_static = IS_STATIC_DEFAULT
         self.annotation = None     # to save the annotation
         self.real_invocations = {} # to save all real invocation of `invoke-virtual`
 
@@ -6783,6 +6787,9 @@ class DalvikCode(object):
           :rtype: int
       """
         return self.outs_size
+
+    def get_locals_size(self):
+            return self.get_registers_size() - self.get_ins_size()
 
     def get_tries_size(self):
         """
