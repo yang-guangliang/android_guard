@@ -23,6 +23,7 @@ from androguard.util import read
 import sys
 import re
 import struct
+import collections
 from struct import pack, unpack, calcsize
 
 DEX_FILE_MAGIC_35 = 'dex\n035\x00'
@@ -327,7 +328,7 @@ def determineNext(i, end, m):
         return [end + i.get_length(), off + (end)]
     # sparse/packed
     elif op_value in (0x2b, 0x2c):
-        x = []
+        x = collections.deque()
 
         x.append(end + i.get_length())
 
@@ -341,13 +342,13 @@ def determineNext(i, end, m):
                 x.append(target * 2 + end)
 
         return x
-    return []
+    return collections.deque()
 
 
 def determineException(vm, m):
     # no exceptions !
     if m.get_code().get_tries_size() <= 0:
-        return []
+        return collections.deque()
 
     h_off = {}
 
@@ -359,7 +360,7 @@ def determineException(vm, m):
         if offset_handler in h_off:
             h_off[offset_handler].append([try_item])
         else:
-            h_off[offset_handler] = []
+            h_off[offset_handler] = collections.deque()
             h_off[offset_handler].append([try_item])
 
     #print m.get_name(), "\t HANDLER_CATCH_LIST SIZE", handler_catch_list.size, handler_catch_list.get_offset()
@@ -370,7 +371,7 @@ def determineException(vm, m):
         for i in h_off[handler_catch.get_off()]:
             i.append(handler_catch)
 
-    exceptions = []
+    exceptions = collections.deque()
     #print m.get_name(), h_off
     for i in h_off:
         for value in h_off[i]:
@@ -603,7 +604,7 @@ class AnnotationSetItem(object):
     def __init__(self, buff, cm):
         self.CM = cm
         self.offset = buff.get_idx()
-        self.annotation_off_item = []
+        self.annotation_off_item = collections.deque()
 
         self.size = unpack("=I", buff.read(4))[0]
         for i in xrange(0, self.size):
@@ -699,7 +700,7 @@ class AnnotationSetRefList(object):
         self.offset = buff.get_idx()
 
         self.CM = cm
-        self.list = []
+        self.list = collections.deque()
 
         self.size = unpack("=I", buff.read(4))[0]
         for i in xrange(0, self.size):
@@ -931,15 +932,15 @@ class AnnotationsDirectoryItem(object):
         self.annotated_methods_size = unpack("=I", buff.read(4))[0]
         self.annotated_parameters_size = unpack("=I", buff.read(4))[0]
 
-        self.field_annotations = []
+        self.field_annotations = collections.deque()
         for i in xrange(0, self.annotated_fields_size):
             self.field_annotations.append(FieldAnnotation(buff, cm))
 
-        self.method_annotations = []
+        self.method_annotations = collections.deque()
         for i in xrange(0, self.annotated_methods_size):
             self.method_annotations.append(MethodAnnotation(buff, cm))
 
-        self.parameter_annotations = []
+        self.parameter_annotations = collections.deque()
         for i in xrange(0, self.annotated_parameters_size):
             self.parameter_annotations.append(ParameterAnnotation(buff, cm))
 
@@ -1122,7 +1123,7 @@ class TypeList(object):
 
         self.size = unpack("=I", buff.read(4))[0]
 
-        self.list = []
+        self.list = collections.deque()
         for i in xrange(0, self.size):
             self.list.append(TypeItem(buff, cm))
 
@@ -1237,7 +1238,7 @@ class DBGBytecode(object):
     def __init__(self, cm, op_value):
         self.CM = cm
         self.op_value = op_value
-        self.format = []
+        self.format = collections.deque()
 
     def get_op_value(self):
         return self.op_value
@@ -1259,7 +1260,7 @@ class DBGBytecode(object):
             self.op_value, str(self.format), self.get_value()))
 
     def get_obj(self):
-        return []
+        return collections.deque()
 
     def get_raw(self):
         buff = self.op_value.get_value_buff()
@@ -1283,11 +1284,11 @@ class DebugInfoItem(object):
 
         #print "line", self.line_start, "params", self.parameters_size
 
-        self.parameter_names = []
+        self.parameter_names = collections.deque()
         for i in xrange(0, self.parameters_size):
             self.parameter_names.append(readuleb128p1(buff))
 
-        self.bytecodes = []
+        self.bytecodes = collections.deque()
         bcode = DBGBytecode(self.CM, unpack("=B", buff.read(1))[0])
         self.bytecodes.append(bcode)
 
@@ -1336,7 +1337,7 @@ class DebugInfoItem(object):
         return self.parameter_names
 
     def get_translated_parameter_names(self):
-        l = []
+        l = collections.deque()
         for i in self.parameter_names:
             if i == -1:
                 l.append(None)
@@ -1417,7 +1418,7 @@ class DebugInfoItemEmpty(object):
         pass
 
     def get_obj(self):
-        return []
+        return collections.deque()
 
     def get_raw(self):
         return self.__raw
@@ -1442,7 +1443,7 @@ class EncodedArray(object):
 
         self.size = readuleb128(buff)
 
-        self.values = []
+        self.values = collections.deque()
         for i in xrange(0, self.size):
             self.values.append(EncodedValue(buff, cm))
 
@@ -1576,7 +1577,7 @@ class EncodedValue(object):
     def get_obj(self):
         if isinstance(self.value, str) == False:
             return [self.value]
-        return []
+        return collections.deque()
 
     def get_raw(self):
         if self.raw_value == None:
@@ -1668,7 +1669,7 @@ class EncodedAnnotation(object):
 
         self.size = readuleb128(buff)
 
-        self.elements = []
+        self.elements = collections.deque()
         for i in xrange(0, self.size):
             self.elements.append(AnnotationElement(buff, cm))
 
@@ -1833,7 +1834,7 @@ class EncodedArrayItem(object):
 
 
 def utf8_to_string(buff, length):
-    chars = []
+    chars = collections.deque()
 
     for _ in xrange(length):
         first_char = ord(buff.read(1))
@@ -1931,7 +1932,7 @@ class StringDataItem(object):
                                (self.utf16_size, repr(self.data)))
 
     def get_obj(self):
-        return []
+        return collections.deque()
 
     def get_raw(self):
         return writeuleb128(self.utf16_size) + self.data
@@ -2057,7 +2058,7 @@ class TypeHIdItem(object):
 
         self.offset = buff.get_idx()
 
-        self.type = []
+        self.type = collections.deque()
         for i in xrange(0, size):
             self.type.append(TypeIdItem(buff, cm))
 
@@ -2219,7 +2220,7 @@ class ProtoHIdItem(object):
 
         self.offset = buff.get_idx()
 
-        self.proto = []
+        self.proto = collections.deque()
 
         for i in xrange(0, size):
             self.proto.append(ProtoIdItem(buff, cm))
@@ -2377,7 +2378,7 @@ class FieldHIdItem(object):
     def __init__(self, size, buff, cm):
         self.offset = buff.get_idx()
 
-        self.elem = []
+        self.elem = collections.deque()
         for i in xrange(0, size):
             self.elem.append(FieldIdItem(buff, cm))
 
@@ -2558,7 +2559,7 @@ class MethodHIdItem(object):
 
         self.offset = buff.get_idx()
 
-        self.methods = []
+        self.methods = collections.deque()
         for i in xrange(0, size):
             self.methods.append(MethodIdItem(buff, cm))
 
@@ -2777,7 +2778,7 @@ class EncodedField(object):
         self.reload()
 
     def get_obj(self):
-        return []
+        return collections.deque()
 
     def get_raw(self):
         return writeuleb128(self.field_idx_diff) + writeuleb128(
@@ -2853,7 +2854,7 @@ class EncodedMethod(object):
 
         self.code = None
         self.access_flags_string = None
-        self.notes = []
+        self.notes = collections.deque()
 
         # to be used in the future
         self.is_static = IS_STATIC_DEFAULT
@@ -2943,7 +2944,7 @@ class EncodedMethod(object):
             if params:
                 info["registers"] = (0, nb - len(params) - 1)
                 j = 0
-                info["params"] = []
+                info["params"] = collections.deque()
                 for i in xrange(nb - len(params), nb):
                     info["params"].append((i, get_type(params[j])))
                     j += 1
@@ -3017,7 +3018,7 @@ class EncodedMethod(object):
         """
           Display the notes about the method
       """
-        if self.notes != []:
+        if len(self.notes) != 0:
             bytecode._PrintSubBanner("Notes")
             for i in self.notes:
                 bytecode._PrintNote(i)
@@ -3059,7 +3060,7 @@ class EncodedMethod(object):
             :rtype: a generator of each :class:`Instruction` (or a cached list of instructions if you have setup instructions)
         """
         if self.code == None:
-            return []
+            return collections.deque()
         return self.code.get_bc().get_instructions()
 
     def set_instructions(self, instructions):
@@ -3070,7 +3071,7 @@ class EncodedMethod(object):
             :type instructions: a list of :class:`Instruction`
         """
         if self.code == None:
-            return []
+            return collections.deque()
         return self.code.get_bc().set_instructions(instructions)
 
     def get_instruction(self, idx, off=None):
@@ -3193,10 +3194,10 @@ class ClassDataItem(object):
         self.direct_methods_size = readuleb128(buff)
         self.virtual_methods_size = readuleb128(buff)
 
-        self.static_fields = []
-        self.instance_fields = []
-        self.direct_methods = []
-        self.virtual_methods = []
+        self.static_fields = collections.deque()
+        self.instance_fields = collections.deque()
+        self.direct_methods = collections.deque()
+        self.virtual_methods = collections.deque()
 
         self._load_elements(self.static_fields_size, self.static_fields,
                             EncodedField, buff, cm)
@@ -3411,7 +3412,7 @@ class ClassDefItem(object):
         self.class_data_off = unpack("=I", buff.read(4))[0]
         self.static_values_off = unpack("=I", buff.read(4))[0]
 
-        self.interfaces = []
+        self.interfaces = collections.deque()
         self.class_data_item = None
         self.static_values = None
 
@@ -3448,7 +3449,7 @@ class ClassDefItem(object):
         """
         if self.class_data_item != None:
             return self.class_data_item.get_methods()
-        return []
+        return collections.deque()
 
     def get_fields(self):
         """
@@ -3458,7 +3459,7 @@ class ClassDefItem(object):
         """
         if self.class_data_item != None:
             return self.class_data_item.get_fields()
-        return []
+        return collections.deque()
 
     def get_class_idx(self):
         """
@@ -3691,7 +3692,7 @@ class ClassHDefItem(object):
 
         self.offset = buff.get_idx()
 
-        self.class_def = []
+        self.class_def = collections.deque()
 
         for i in xrange(0, size):
             idx = buff.get_idx()
@@ -3714,7 +3715,7 @@ class ClassHDefItem(object):
         return None
 
     def get_method(self, name_class, name_method):
-        l = []
+        l = collections.deque()
 
         for i in self.class_def:
             if i.get_name() == name_class:
@@ -3779,7 +3780,7 @@ class EncodedTypeAddrPair(object):
         return self.addr
 
     def get_obj(self):
-        return []
+        return collections.deque()
 
     def show(self):
         bytecode._PrintSubBanner("Encoded Type Addr Pair")
@@ -3808,7 +3809,7 @@ class EncodedCatchHandler(object):
 
         self.size = readsleb128(buff)
 
-        self.handlers = []
+        self.handlers = collections.deque()
 
         for i in xrange(0, abs(self.size)):
             self.handlers.append(EncodedTypeAddrPair(buff))
@@ -3891,7 +3892,7 @@ class EncodedCatchHandlerList(object):
         self.offset = buff.get_idx()
 
         self.size = readuleb128(buff)
-        self.list = []
+        self.list = collections.deque()
 
         for i in xrange(0, self.size):
             self.list.append(EncodedCatchHandler(buff, cm))
@@ -4049,7 +4050,7 @@ class Instruction(object):
 
             :rtype: list of int
         """
-        return []
+        return collections.deque()
 
     def show(self, idx):
         """
@@ -4142,7 +4143,7 @@ class InstructionInvalid(Instruction):
         return "(OP:%x)" % self.OP
 
     def get_operands(self, idx=-1):
-        return []
+        return collections.deque()
 
     def get_length(self):
         return 2
@@ -4159,7 +4160,7 @@ class FillArrayData(Instruction):
     """
 
     def __init__(self, buff):
-        self.notes = []
+        self.notes = collections.deque()
 
         self.format_general_size = calcsize("=HHI")
         self.ident = unpack("=H", buff[0:2])[0]
@@ -4275,14 +4276,14 @@ class SparseSwitch(Instruction):
     """
 
     def __init__(self, buff):
-        self.notes = []
+        self.notes = collections.deque()
 
         self.format_general_size = calcsize("=HH")
         self.ident = unpack("=H", buff[0:2])[0]
         self.size = unpack("=H", buff[2:4])[0]
 
-        self.keys = []
-        self.targets = []
+        self.keys = collections.deque()
+        self.targets = collections.deque()
 
         idx = self.format_general_size
         for i in xrange(0, self.size):
@@ -4351,7 +4352,7 @@ class SparseSwitch(Instruction):
 
           :rtype: string
       """
-        return []
+        return collections.deque()
 
     def get_formatted_operands(self):
         return None
@@ -4399,7 +4400,7 @@ class PackedSwitch(Instruction):
     """
 
     def __init__(self, buff):
-        self.notes = []
+        self.notes = collections.deque()
 
         self.format_general_size = calcsize("=HHI")
 
@@ -4407,7 +4408,7 @@ class PackedSwitch(Instruction):
         self.size = unpack("=H", buff[2:4])[0]
         self.first_key = unpack("=i", buff[4:8])[0]
 
-        self.targets = []
+        self.targets = collections.deque()
 
         idx = self.format_general_size
 
@@ -4478,7 +4479,7 @@ class PackedSwitch(Instruction):
 
           :rtype: string
       """
-        return []
+        return collections.deque()
 
     def get_formatted_operands(self):
         return None
@@ -4564,7 +4565,7 @@ class Instruction35c(Instruction):
         return buff
 
     def get_operands(self, idx=-1):
-        l = []
+        l = collections.deque()
         kind = get_kind(self.cm, self.get_kind(), self.BBBB)
 
         if self.A == 0:
@@ -4617,7 +4618,7 @@ class Instruction10x(Instruction):
         return ""
 
     def get_operands(self, idx=-1):
-        return []
+        return collections.deque()
 
     def get_length(self):
         return 2
@@ -4642,7 +4643,7 @@ class Instruction21h(Instruction):
 
         #log_andro.debug("OP:%x %s AA:%x BBBBB:%x" % (self.OP, args[0], self.AA, self.BBBB))
 
-        self.formatted_operands = []
+        self.formatted_operands = collections.deque()
 
         if self.OP == 0x15:
             self.formatted_operands.append(unpack('=f', '\x00\x00' + pack(
@@ -4658,7 +4659,7 @@ class Instruction21h(Instruction):
         buff = ""
         buff += "v%d, %d" % (self.AA, self.BBBB)
 
-        if self.formatted_operands != []:
+        if len(self.formatted_operands) != 0:
             buff += " # %s" % (str(self.formatted_operands))
 
         return buff
@@ -4782,7 +4783,7 @@ class Instruction21s(Instruction):
 
         self.BBBB = unpack("=h", buff[2:4])[0]
 
-        self.formatted_operands = []
+        self.formatted_operands = collections.deque()
 
         if self.OP == 0x16:
             self.formatted_operands.append(unpack('=d', pack('=d', self.BBBB))[0
@@ -4797,7 +4798,7 @@ class Instruction21s(Instruction):
         buff = ""
         buff += "v%d, %d" % (self.AA, self.BBBB)
 
-        if self.formatted_operands != []:
+        if len(self.formatted_operands) != 0:
             buff += " # %s" % str(self.formatted_operands)
 
         return buff
@@ -5049,7 +5050,7 @@ class Instruction51l(Instruction):
 
         self.BBBBBBBBBBBBBBBB = unpack("=q", buff[2:10])[0]
 
-        self.formatted_operands = []
+        self.formatted_operands = collections.deque()
 
         if self.OP == 0x18:
             self.formatted_operands.append(unpack('=d', pack(
@@ -5098,7 +5099,7 @@ class Instruction31i(Instruction):
 
         self.BBBBBBBB = unpack("=i", buff[2:6])[0]
 
-        self.formatted_operands = []
+        self.formatted_operands = collections.deque()
 
         if self.OP == 0x14:
             self.formatted_operands.append(unpack("=f", pack("=i",
@@ -5477,7 +5478,7 @@ class Instruction3rc(Instruction):
             return [(OPERAND_REGISTER, self.CCCC),
                     (self.get_kind() + OPERAND_KIND, self.BBBB, kind)]
         else:
-            l = []
+            l = collections.deque()
             for i in range(self.CCCC, self.NNNN):
                 l.append((OPERAND_REGISTER, i))
 
@@ -5596,7 +5597,7 @@ class Instruction35mi(Instruction):
         return buff
 
     def get_operands(self, idx=-1):
-        l = []
+        l = collections.deque()
         kind = get_kind(self.cm, self.get_kind(), self.BBBB)
 
         if self.A == 1:
@@ -5676,7 +5677,7 @@ class Instruction35ms(Instruction):
         return buff
 
     def get_operands(self, idx=-1):
-        l = []
+        l = collections.deque()
         kind = get_kind(self.cm, self.get_kind(), self.BBBB)
 
         if self.A == 1:
@@ -5753,7 +5754,7 @@ class Instruction3rmi(Instruction):
             return [(OPERAND_REGISTER, self.CCCC),
                     (self.get_kind() + OPERAND_KIND, self.BBBB, kind)]
         else:
-            l = []
+            l = collections.deque()
             for i in range(self.CCCC, self.NNNN):
                 l.append((OPERAND_REGISTER, i))
 
@@ -5808,7 +5809,7 @@ class Instruction3rms(Instruction):
             return [(OPERAND_REGISTER, self.CCCC),
                     (self.get_kind() + OPERAND_KIND, self.BBBB, kind)]
         else:
-            l = []
+            l = collections.deque()
             for i in range(self.CCCC, self.NNNN):
                 l.append((OPERAND_REGISTER, i))
 
@@ -5974,7 +5975,7 @@ class Instruction5rc(Instruction):
             return [(OPERAND_REGISTER, self.CCCC),
                     (self.get_kind() + OPERAND_KIND, self.BBBB, kind)]
         else:
-            l = []
+            l = collections.deque()
             for i in range(self.CCCC, self.NNNN):
                 l.append((OPERAND_REGISTER, i))
 
@@ -6493,7 +6494,7 @@ class DCode(object):
         self.size = size
 
         self.notes = {}
-        self.cached_instructions = []
+        self.cached_instructions = collections.deque()
         self.rcache = 0
 
         self.idx = 0
@@ -6582,7 +6583,7 @@ class DCode(object):
             idx = self.off_to_pos(off)
 
         if idx not in self.notes:
-            self.notes[idx] = []
+            self.notes[idx] = collections.deque()
 
         self.notes[idx].append(msg)
 
@@ -6756,7 +6757,7 @@ class DalvikCode(object):
         if (self.insns_size % 2 == 1):
             self.padding = unpack("=H", buff.read(2))[0]
 
-        self.tries = []
+        self.tries = collections.deque()
         self.handlers = None
         if self.tries_size > 0:
             for i in xrange(0, self.tries_size):
@@ -6953,7 +6954,7 @@ class CodeItem(object):
 
         self.offset = buff.get_idx()
 
-        self.code = []
+        self.code = collections.deque()
         self.__code_off = {}
 
         for i in xrange(0, size):
@@ -7197,7 +7198,7 @@ class ClassManager(object):
         self.gvmanalysis_ob = None
 
         self.__manage_item = {}
-        self.__manage_item_off = []
+        self.__manage_item_off = collections.deque()
 
         self.__strings_off = {}
 
@@ -7215,7 +7216,7 @@ class ClassManager(object):
 
         self.hook_strings = {}
 
-        self.engine = []
+        self.engine = collections.deque()
         self.engine.append("python")
 
         if self.vm != None:
@@ -7342,7 +7343,7 @@ class ClassManager(object):
 
     def get_type_list(self, off):
         if off == 0:
-            return []
+            return collections.deque()
 
         for i in self.__manage_item["TYPE_TYPE_LIST"]:
             if i.get_type_list_off() == off:
@@ -7511,7 +7512,7 @@ class MapList(object):
 
         self.size = unpack("=I", buff.read(4))[0]
 
-        self.map_item = []
+        self.map_item = collections.deque()
         for i in xrange(0, self.size):
             idx = buff.get_idx()
 
@@ -7578,7 +7579,7 @@ class MapList(object):
 class XREF(object):
 
     def __init__(self):
-        self.items = []
+        self.items = collections.deque()
 
     def add(self, x, y):
         self.items.append((x, y))
@@ -7587,7 +7588,7 @@ class XREF(object):
 class DREF(object):
 
     def __init__(self):
-        self.items = []
+        self.items = collections.deque()
 
     def add(self, x, y):
         self.items.append((x, y))
@@ -7612,7 +7613,7 @@ class DvmAnnotations(object):
         """
         def get_all_methods_with_annotations(self):
                 # get all methods annotations from annotations_directory
-                all_methods_annotations = []
+                all_methods_annotations = collections.deque()
                 for d in self.annotations_directory:
                         all_methods_annotations.extend(d.get_method_annotations())
                 all_methods_annotations = set(all_methods_annotations)
@@ -7660,7 +7661,7 @@ class DvmAnnotations(object):
 
                 self.size = readuleb128(buff)
 
-                self.elements = []
+                self.elements = collections.deque()
                 for i in xrange(0, self.size):
                     self.elements.append(AnnotationElement(buff, cm))
 
@@ -7838,7 +7839,7 @@ class DalvikVMFormat(bytecode._Bytecode, DvmAnnotations):
 
           :rtype: string
       """
-        l = []
+        l = collections.deque()
         h = {}
         s = {}
         h_r = {}
@@ -8012,7 +8013,7 @@ class DalvikVMFormat(bytecode._Bytecode, DvmAnnotations):
             :rtype: a list with all :class:`EncodedMethod` objects
         """
         prog = re.compile(name)
-        l = []
+        l = collections.deque()
         for i in self.classes.class_def:
             for j in i.get_methods():
                 if prog.match(j.get_name()):
@@ -8028,7 +8029,7 @@ class DalvikVMFormat(bytecode._Bytecode, DvmAnnotations):
             :rtype: a list with all :class:`EncodedField` objects
         """
         prog = re.compile(name)
-        l = []
+        l = collections.deque()
         for i in self.classes.class_def:
             for j in i.get_fields():
                 if prog.match(j.get_name()):
@@ -8044,7 +8045,7 @@ class DalvikVMFormat(bytecode._Bytecode, DvmAnnotations):
         try:
             return self.fields.gets()
         except AttributeError:
-            return []
+            return collections.deque()
 
     def get_fields(self):
         """
@@ -8052,7 +8053,7 @@ class DalvikVMFormat(bytecode._Bytecode, DvmAnnotations):
 
           :rtype: a list of :class:`EncodedField` objects
         """
-        l = []
+        l = collections.deque()
         for i in self.classes.class_def:
             for j in i.get_fields():
                 l.append(j)
@@ -8064,7 +8065,7 @@ class DalvikVMFormat(bytecode._Bytecode, DvmAnnotations):
 
           :rtype: a list of :class:`EncodedMethod` objects
         """
-        l = []
+        l = collections.deque()
         for i in self.classes.class_def:
             for j in i.get_methods():
                 l.append(j)
@@ -8132,7 +8133,7 @@ class DalvikVMFormat(bytecode._Bytecode, DvmAnnotations):
 
             :rtype: None or a :class:`EncodedMethod` object
         """
-        l = []
+        l = collections.deque()
         for i in self.classes.class_def:
             if i.get_name() == class_name:
                 for j in i.get_methods():
@@ -8150,7 +8151,7 @@ class DalvikVMFormat(bytecode._Bytecode, DvmAnnotations):
 
             :rtype: a list with :class:`EncodedMethod` objects
         """
-        l = []
+        l = collections.deque()
         for i in self.classes.class_def:
             for j in i.get_methods():
                 if class_name == j.get_class_name():
@@ -8167,7 +8168,7 @@ class DalvikVMFormat(bytecode._Bytecode, DvmAnnotations):
 
             :rtype: a list with :class:`EncodedField` objects
         """
-        l = []
+        l = collections.deque()
         for i in self.classes.class_def:
             for j in i.get_fields():
                 if class_name == j.get_class_name():
@@ -8217,7 +8218,7 @@ class DalvikVMFormat(bytecode._Bytecode, DvmAnnotations):
 
             :rtype: a list of strings matching the regex expression
         """
-        str_list = []
+        str_list = collections.deque()
         if regular_expressions.count is None:
             return None
         for i in self.get_strings():
@@ -8264,7 +8265,7 @@ class DalvikVMFormat(bytecode._Bytecode, DvmAnnotations):
         m = {}
         for method in _class.get_methods():
             if method.get_name() not in m:
-                m[method.get_name()] = []
+                m[method.get_name()] = collections.deque()
             m[method.get_name()].append(method)
             setattr(method, "XF", ExportObject())
             setattr(method, "XT", ExportObject())
@@ -8301,7 +8302,7 @@ class DalvikVMFormat(bytecode._Bytecode, DvmAnnotations):
         f = {}
         for field in _class.get_fields():
             if field.get_name() not in f:
-                f[field.get_name()] = []
+                f[field.get_name()] = collections.deque()
             f[field.get_name()].append(field)
             setattr(field, "XR", ExportObject())
             setattr(field, "XW", ExportObject())
@@ -8376,7 +8377,7 @@ class DalvikVMFormat(bytecode._Bytecode, DvmAnnotations):
         present = {}
         r_ids = {}
         to_add = {}
-        els = []
+        els = collections.deque()
 
         for current_class in self.get_classes():
             s_name = current_class.get_superclassname()[1:-1]
@@ -8428,7 +8429,7 @@ class DalvikVMFormat(bytecode._Bytecode, DvmAnnotations):
                 if len(n.children) > 0:
                     print_map(n, l, lvl + 1)
 
-        l = []
+        l = collections.deque()
         print_map(self._get_class_hierarchy(), l)
         return l
 
@@ -8436,12 +8437,12 @@ class DalvikVMFormat(bytecode._Bytecode, DvmAnnotations):
 
         def print_map(node, l):
             if node.title not in l:
-                l[node.title] = []
+                l[node.title] = collections.deque()
 
             for n in node.children:
                 if len(n.children) > 0:
                     w = {}
-                    w[n.title] = []
+                    w[n.title] = collections.deque()
                     l[node.title].append(w)
 
                     print_map(n, w)
@@ -8615,8 +8616,8 @@ class OdexDependencies(object):
         self.crc = unpack("=I", buff.read(4))[0]
         self.dalvik_build = unpack("=I", buff.read(4))[0]
         self.dependency_count = unpack("=I", buff.read(4))[0]
-        self.dependencies = []
-        self.dependency_checksums = []
+        self.dependencies = collections.deque()
+        self.dependency_checksums = collections.deque()
 
         for i in range(0, self.dependency_count):
             string_length = unpack("=I", buff.read(4))[0]
@@ -8757,7 +8758,7 @@ def get_bytecodes_methodx(method, mx):
                 ins_buffer += "%-20s %s" % (ins.get_name(), ins.get_output(idx))
 
                 op_value = ins.get_op_value()
-                if ins == instructions[-1] and i.childs != []:
+                if ins == instructions[-1] and len(i.childs) != 0:
                     # packed/sparse-switch
                     if (op_value == 0x2b or op_value == 0x2c
                        ) and len(i.childs) > 1:
