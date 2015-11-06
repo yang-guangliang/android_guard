@@ -26,6 +26,17 @@ import struct
 import collections
 from struct import pack, unpack, calcsize
 
+############################################################
+# Configuration
+
+PRINT_INSTRUCTION_DETAILS_FLAG  = False
+IS_STATIC_DEFAULT               = False
+
+############################################################
+
+
+
+
 DEX_FILE_MAGIC_35 = 'dex\n035\x00'
 DEX_FILE_MAGIC_36 = 'dex\n036\x00'
 ODEX_FILE_MAGIC_35 = 'dey\n035\x00'
@@ -108,9 +119,7 @@ BRANCH_DVM_OPCODES = set(["throw",
                           "return-void", "return", "return-wide", "return-object",
                           "packed-switch", "sparse-switch"])
 
-PRINT_INSTRUCTION_DETAILS_FLAG  = True
-IS_STATIC_DEFAULT               = False
-
+KIND_DEFAULT = -1
 KIND_METH = 0
 KIND_STRING = 1
 KIND_FIELD = 2
@@ -3994,7 +4003,7 @@ def get_kind(cm, kind, value, flag = PRINT_INSTRUCTION_DETAILS_FLAG):
 
         return buff
 
-    return None
+    return str(value)
 
 
 class Instruction(object):
@@ -4022,7 +4031,11 @@ class Instruction(object):
             if self.OP >= 0xf2ff:
                 return DALVIK_OPCODES_OPTIMIZED[self.OP][1][1]
             return DALVIK_OPCODES_EXTENDED_WIDTH[self.OP][1][1]
-        return DALVIK_OPCODES_FORMAT[self.OP][1][1]
+        # return DALVIK_OPCODES_FORMAT[self.OP][1][1]
+        l = DALVIK_OPCODES_FORMAT[self.OP][1]
+        if len(l) <= 1:
+                return KIND_DEFAULT
+        return l[1]
 
     def get_name(self):
         """
@@ -4072,7 +4085,7 @@ class Instruction(object):
 
             :rtype: string
         """
-        return get_kind(self.cm, self.get_kind(), self.get_ref_kind())
+        return get_kind(self.cm, self.get_kind(), self.get_ref_kind(), True)
 
     def get_output(self, idx=-1):
         """
@@ -4541,8 +4554,6 @@ class Instruction35c(Instruction):
         self.E = (i16 >> 8) & 0xf
         self.F = (i16 >> 12) & 0xf
 
-        self.real_invocation_clazz = None
-
     def get_output(self, idx=-1):
         buff = ""
         kind = get_kind(self.cm, self.get_kind(), self.BBBB)
@@ -4667,6 +4678,9 @@ class Instruction21h(Instruction):
     def get_operands(self, idx=-1):
         return [(OPERAND_REGISTER, self.AA), (OPERAND_LITERAL, self.BBBB)]
 
+    def get_ref_kind(self):
+        return self.BBBB
+
     def get_formatted_operands(self):
         return self.formatted_operands
 
@@ -4696,6 +4710,9 @@ class Instruction11n(Instruction):
         buff = ""
         buff += "v%d, %d" % (self.A, self.B)
         return buff
+
+    def get_ref_kind(self):
+        return self.B
 
     def get_operands(self, idx=-1):
         return [(OPERAND_REGISTER, self.A), (OPERAND_LITERAL, self.B)]
@@ -4805,6 +4822,9 @@ class Instruction21s(Instruction):
 
     def get_operands(self, idx=-1):
         return [(OPERAND_REGISTER, self.AA), (OPERAND_LITERAL, self.BBBB)]
+
+    def get_ref_kind(self):
+        return self.BBBB
 
     def get_literals(self):
         return [self.BBBB]
@@ -5125,6 +5145,9 @@ class Instruction31i(Instruction):
 
     def get_operands(self, idx=-1):
         return [(OPERAND_REGISTER, self.AA), (OPERAND_LITERAL, self.BBBBBBBB)]
+
+    def get_ref_kind(self):
+        return self.BBBBBBBB
 
     def get_formatted_operands(self):
         return self.formatted_operands
