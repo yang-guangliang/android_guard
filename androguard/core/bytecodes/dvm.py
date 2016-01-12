@@ -29,7 +29,7 @@ from struct import pack, unpack, calcsize
 ############################################################
 # Configuration
 
-PRINT_INSTRUCTION_DETAILS_FLAG  = False
+PRINT_INSTRUCTION_DETAILS_FLAG  = True
 IS_STATIC_DEFAULT               = False
 
 ############################################################
