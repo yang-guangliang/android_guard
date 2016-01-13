@@ -7621,7 +7621,7 @@ class DvmAnnotations(object):
         def __init__(self):
                 self.map_list = None
 
-        def build(self):
+        def init_annotations(self):
                 self.annotations_item = self.map_list.get_item_type("TYPE_ANNOTATION_ITEM")
                 self.annotations_set_item = self.map_list.get_item_type("TYPE_ANNOTATION_SET_ITEM")
                 self.annotations_directory = self.map_list.get_item_type("TYPE_ANNOTATIONS_DIRECTORY_ITEM")
@@ -7635,6 +7635,9 @@ class DvmAnnotations(object):
         more details: https://source.android.com/devices/tech/dalvik/dex-format.html
         """
         def get_all_methods_with_annotations(self):
+                if self.annotations_directory is None:
+                        return set()
+
                 # get all methods annotations from annotations_directory
                 all_methods_annotations = collections.deque()
                 for d in self.annotations_directory:
@@ -7768,12 +7771,13 @@ class DalvikVMFormat(bytecode._Bytecode, DvmAnnotations):
             self.debug = self.map_list.get_item_type("TYPE_DEBUG_INFO_ITEM")
             self.header = self.map_list.get_item_type("TYPE_HEADER_ITEM")
 
-            self.build()
+            self.init_annotations()
 
         self.classes_names = None
         self.__cache_methods = None
         self.__cached_methods_idx = None
         self.__cache_fields = None
+
 
     def get_api_version(self):
         '''
