@@ -40,7 +40,7 @@ class _Method(object):
             #print "RECEIVE", repr(ret)
             return cPickle.loads( ret )
         except xmlrpclib.ProtocolError:
-            return []
+            return collections.deque()
 
 class MyXMLRPC(object):
     def __init__(self, proxy):
@@ -64,7 +64,7 @@ class Function(object):
         self.name = name
         self.start_ea = start_ea
         self.information = information
-        self.basic_blocks = []
+        self.basic_blocks = collections.deque()
         self.instructions = instructions
 
         r = {}
@@ -189,7 +189,7 @@ class IDAPipe(object):
         # for each basic block
         sorted_boundaries = sorted(boundaries, reverse = True)
         end_addr = self.proxy.PrevHead(f_end, f_start)
-        bb_addr = []
+        bb_addr = collections.deque()
         for begin_addr in sorted_boundaries:
             bb_addr.append((begin_addr, end_addr))
             # search the next end_addr which could be

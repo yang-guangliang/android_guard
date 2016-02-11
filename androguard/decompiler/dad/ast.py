@@ -127,7 +127,7 @@ def switch_stmt(cond_expr, ksv_pairs):
 # Create empty statement block (statements to be appended later)
 # Note, the code below assumes this can be modified in place
 def statement_block():
-    return ['BlockStatement', None, []]
+    return ['BlockStatement', None, collections.deque()]
 
 
 # Add a statement to the end of a statement block
@@ -227,7 +227,7 @@ def visit_decl(var, init_expr=None):
 
 def visit_arr_data(value):
     data = value.get_data()
-    tab = []
+    tab = collections.deque()
     elem_size = value.element_width
     if elem_size == 4:
         for i in range(0, value.size * 4, 4):
@@ -457,7 +457,7 @@ class JSONWriter(object):
         self.need_break = True
         self.constructor = False
 
-        self.context = []
+        self.context = collections.deque()
 
     # This class is created as a context manager so that it can be used like
     # with self as foo:
@@ -497,7 +497,7 @@ class JSONWriter(object):
             assert (not params)
             params = range(len(m.params_type))
 
-        paramdecls = []
+        paramdecls = collections.deque()
         for ptype, name in zip(m.params_type, params):
             t = parse_descriptor(ptype)
             v = local('p{}'.format(name))
@@ -514,7 +514,7 @@ class JSONWriter(object):
             'flags': flags,
             'ret': parse_descriptor(m.type),
             'params': paramdecls,
-            'comments': [],
+            'comments': collections.deque(),
             'body': body,
         }
 
@@ -593,7 +593,7 @@ class JSONWriter(object):
 
     def visit_cond_node(self, cond):
         cond_expr = None
-        scopes = []
+        scopes = collections.deque()
 
         follow = cond.follow['if']
         if cond.false is cond.true:
@@ -656,7 +656,7 @@ class JSONWriter(object):
         switch_ins = switch.get_ins()[-1]
 
         cond_expr = visit_expr(switch_ins)
-        ksv_pairs = []
+        ksv_pairs = collections.deque()
 
         follow = switch.follow['switch']
         cases = switch.cases
@@ -710,7 +710,7 @@ class JSONWriter(object):
             self.try_follow.append(try_node.follow)
             self.visit_node(try_node.try_start)
 
-        pairs = []
+        pairs = collections.deque()
         for catch_node in try_node.catch:
             if catch_node.exception_ins:
                 ins = catch_node.exception_ins

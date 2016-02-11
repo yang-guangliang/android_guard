@@ -31,7 +31,7 @@ class DemoEmulator(object):
 
     def __init__(self, graph):
         self.graph = graph
-        self.loop = []
+        self.loop = collections.deque()
         self.mem = {}
 
     def init(self, key, value):

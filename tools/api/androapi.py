@@ -50,7 +50,7 @@ def extractPerms(filename):
     for i in soup.findAll("table", attrs={'id': "constants"}):
         for j in i.findChildren("tr"):
             td = j.findChildren("td")
-            if td != []:
+            if td != collections.deque():
                 _type = str(td[0].text)
                 _name = str(td[1].text)
                 _desc = str(td[2].text)
@@ -72,14 +72,14 @@ def extractInformation(filename):
     for i in soup.findAll('a', attrs={'name': re.compile(".")}):
         next_div = i.findNext("div")
 
-        perms = []
+        perms = collections.deque()
         for perm in PERMS:
             perm_access = next_div.findAll(text=re.compile(perm))
-            if perm_access != []:
+            if perm_access != collections.deque():
                 perms.append(perm)
                 #print i.name, i.get("name"), perm_access
 
-        if perms != []:
+        if perms != collections.deque():
             element = None
             descs = i.findNext("span", attrs={'class': 'normal'})
             _descriptor_return = descs.next
@@ -96,7 +96,7 @@ def extractInformation(filename):
                 element = Constant(i.get("name"), perms, _descriptor_return)
             for perm in perms:
                 if package not in PERMS_API[perm]:
-                    PERMS_API[perm][package] = []
+                    PERMS_API[perm][package] = collections.deque()
                 PERMS_API[perm][package].append(element)
 
 
@@ -201,7 +201,7 @@ save_file("./dvm_permissions_unformatted.py")
 #      print i.name, i.get("name")#, i.findNextSlibing(text=re.compile("READ_PHONE_STATE"))
 #for i in soup.findAll(text=re.compile("READ_PHONE_STATE")):
 #   print i, i.parent.name, i.findPrevious(re.compile('^A')), i.findPreviousSibling(re.compile('^A'))
-#   if i.contents != []:
+#   if i.contents != collections.deque():
 #      if i.contents[0] == "READ_PHONE_STATE":
 #         print "here", i.parent
 #         parent = i.parent

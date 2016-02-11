@@ -108,7 +108,7 @@ class SwitchBlock(BasicBlock):
     def __init__(self, name, switch, block_ins):
         super(SwitchBlock, self).__init__(name, block_ins)
         self.switch = switch
-        self.cases = []
+        self.cases = collections.deque()
         self.default = None
         self.node_to_case = defaultdict(list)
         self.type.is_switch = True
@@ -186,13 +186,13 @@ class Condition(object):
         self.cond2.neg()
 
     def get_ins(self):
-        lins = []
+        lins = collections.deque()
         lins.extend(self.cond1.get_ins())
         lins.extend(self.cond2.get_ins())
         return lins
 
     def get_loc_with_ins(self):
-        loc_ins = []
+        loc_ins = collections.deque()
         loc_ins.extend(self.cond1.get_loc_with_ins())
         loc_ins.extend(self.cond2.get_loc_with_ins())
         return loc_ins
@@ -273,7 +273,7 @@ class TryBlock(BasicBlock):
     def __init__(self, node):
         super(TryBlock, self).__init__('Try-%s' % node.name, None)
         self.try_start = node
-        self.catch = []
+        self.catch = collections.deque()
 
     # FIXME:
     @property
@@ -320,7 +320,7 @@ class CatchBlock(BasicBlock):
 
 
 def build_node_from_block(block, vmap, gen_ret, exception_type=None):
-    ins, lins = None, []
+    ins, lins = None, collections.deque()
     idx = block.get_start()
     for ins in block.get_instructions():
         opcode = ins.get_op_value()

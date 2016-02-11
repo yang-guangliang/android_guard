@@ -56,7 +56,7 @@ class Session(object):
 
         self.analyzed_dex[digest] = (d, dx)
         if filename not in self.analyzed_files:
-            self.analyzed_files[filename] = []
+            self.analyzed_files[filename] = collections.deque()
 
         self.analyzed_files[filename].append(digest)
         self.analyzed_digest[digest] = filename
@@ -77,7 +77,7 @@ class Session(object):
 
         self.analyzed_dex[digest] = (d, dx)
         if filename not in self.analyzed_files:
-            self.analyzed_files[filename] = []
+            self.analyzed_files[filename] = collections.deque()
 
         self.analyzed_files[filename].append(digest)
         self.analyzed_digest[digest] = filename
@@ -104,7 +104,7 @@ class Session(object):
     def add(self, filename, raw_data, dx=None):
         ret = is_android_raw(raw_data)
         if ret:
-            self.analyzed_files[filename] = []
+            self.analyzed_files[filename] = collections.deque()
             digest = hashlib.sha256(raw_data).hexdigest()
             if ret == "APK":
                 apk_digest, apk = self.addAPK(filename, raw_data)
@@ -185,7 +185,7 @@ class Session(object):
             dx = None
 
             if len(self.analyzed_apk[digest[0]][1:]) > 1:
-                d = []
+                d = collections.deque()
                 for dex_file in self.analyzed_apk[digest[0]][1:]:
                     d.append(self.analyzed_dex[dex_file][0])
             else:

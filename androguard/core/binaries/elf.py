@@ -64,7 +64,7 @@ class ELF(object):
 
         self.in_str = bin_stream.bin_stream(self.E.virt)
         self.symbol_pool = None
-        self.functions = []
+        self.functions = collections.deque()
 
         self.create_symbol_pool()
 

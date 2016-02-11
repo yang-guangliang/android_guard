@@ -36,7 +36,7 @@ class MakeProperties(type):
             return fun
 
         super(MakeProperties, cls).__init__(name, bases, dct)
-        attrs = []
+        attrs = collections.deque()
         prefixes = ('_get_', '_set_')
         for key in dct.keys():
             for prefix in prefixes:
@@ -93,7 +93,7 @@ class Node(object):
         self.interval = None
         self.startloop = False
         self.latch = None
-        self.loop_nodes = []
+        self.loop_nodes = collections.deque()
 
     def copy_from(self, node):
         self.num = node.num

@@ -29,7 +29,7 @@ def is_connected():
 def wrapper_get_raw(oops):
     F = {}
     for function_ea in Functions():
-        F[ function_ea ] = []
+        F[ function_ea ] = collections.deque()
 
         f_start = function_ea
         f_end = GetFunctionAttr(function_ea, FUNCATTR_END)
@@ -69,7 +69,7 @@ def wrapper_get_raw(oops):
         # for each basic block
         sorted_boundaries = sorted(boundaries, reverse = True)
         end_addr = PrevHead(f_end, f_start)
-        bb_addr = []
+        bb_addr = collections.deque()
         for begin_addr in sorted_boundaries:
             bb_addr.append((begin_addr, end_addr))
             # search the next end_addr which could be
@@ -136,7 +136,7 @@ class IDAWrapper(object):
                     return cPickle.dumps( [ i for i in ret ] )
                 return cPickle.dumps( ret )
 
-        return cPickle.dumps( [] )
+        return cPickle.dumps( collections.deque() )
 
 def main():
     autoWait()

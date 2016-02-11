@@ -252,7 +252,7 @@ def method2dot(mx, colors={}):
         for i in registers:
             registers[i] = registers_colors.pop(0)
 
-    new_links = []
+    new_links = collections.deque()
 
     for DVMBasicMethodBlock in mx.basic_blocks.gets():
         ins_idx = DVMBasicMethodBlock.start
@@ -448,17 +448,17 @@ def method2jpg(output, mx, raw=False):
 def vm2json(vm):
     d = {}
     d["name"] = "root"
-    d["children"] = []
+    d["children"] = collections.deque()
 
     for _class in vm.get_classes():
         c_class = {}
         c_class["name"] = _class.get_name()
-        c_class["children"] = []
+        c_class["children"] = collections.deque()
 
         for method in _class.get_methods():
             c_method = {}
             c_method["name"] = method.get_name()
-            c_method["children"] = []
+            c_method["children"] = collections.deque()
 
             c_class["children"].append(c_method)
 
@@ -484,7 +484,7 @@ def method2json(mx, directed_graph=False):
 
 def method2json_undirect(mx):
     d = {}
-    reports = []
+    reports = collections.deque()
     d["reports"] = reports
 
     for DVMBasicMethodBlock in mx.basic_blocks.gets():
@@ -492,7 +492,7 @@ def method2json_undirect(mx):
 
         cblock["BasicBlockId"] = DVMBasicMethodBlock.get_name()
         cblock["registers"] = mx.get_method().get_code().get_registers_size()
-        cblock["instructions"] = []
+        cblock["instructions"] = collections.deque()
 
         ins_idx = DVMBasicMethodBlock.start
         for DVMBasicMethodBlockInstruction in DVMBasicMethodBlock.get_instructions(
@@ -506,7 +506,7 @@ def method2json_undirect(mx):
             cblock["instructions"].append(c_ins)
             ins_idx += DVMBasicMethodBlockInstruction.get_length()
 
-        cblock["Edge"] = []
+        cblock["Edge"] = collections.deque()
         for DVMBasicMethodBlockChild in DVMBasicMethodBlock.childs:
             cblock["Edge"].append(DVMBasicMethodBlockChild[-1].get_name())
 
@@ -517,12 +517,12 @@ def method2json_undirect(mx):
 
 def method2json_direct(mx):
     d = {}
-    reports = []
+    reports = collections.deque()
     d["reports"] = reports
 
     hooks = {}
 
-    l = []
+    l = collections.deque()
     for DVMBasicMethodBlock in mx.basic_blocks.gets():
         for index, DVMBasicMethodBlockChild in enumerate(
             DVMBasicMethodBlock.childs):
@@ -535,17 +535,17 @@ def method2json_direct(mx):
                 cnblock["BasicBlockId"] = DVMBasicMethodBlock.get_name(
                 ) + "-pre"
                 cnblock["start"] = DVMBasicMethodBlock.start
-                cnblock["notes"] = []
+                cnblock["notes"] = collections.deque()
 
                 cnblock["Edge"] = [DVMBasicMethodBlock.get_name()]
                 cnblock["registers"] = 0
-                cnblock["instructions"] = []
+                cnblock["instructions"] = collections.deque()
                 cnblock["info_bb"] = 0
 
                 l.append(cnblock)
 
                 for parent in DVMBasicMethodBlock.fathers:
-                    hooks[parent[-1].get_name()] = []
+                    hooks[parent[-1].get_name()] = collections.deque()
                     hooks[parent[-1].get_name()].append(preblock)
 
                     for idx, child in enumerate(parent[-1].childs):
@@ -561,7 +561,7 @@ def method2json_direct(mx):
         cblock["notes"] = DVMBasicMethodBlock.get_notes()
 
         cblock["registers"] = mx.get_method().get_code().get_registers_size()
-        cblock["instructions"] = []
+        cblock["instructions"] = collections.deque()
 
         ins_idx = DVMBasicMethodBlock.start
         last_instru = None
@@ -595,7 +595,7 @@ def method2json_direct(mx):
                 last_instru.get_op_value() == 0x2c):
                 cblock["info_bb"] = 2
 
-        cblock["Edge"] = []
+        cblock["Edge"] = collections.deque()
         for DVMBasicMethodBlockChild in DVMBasicMethodBlock.childs:
             ok = False
             if DVMBasicMethodBlock.get_name() in hooks:
@@ -653,7 +653,7 @@ class SVs(object):
         self.__value = ntuple._make(unpack(self.__size, buff))
 
     def _get(self):
-        l = []
+        l = collections.deque()
         for i in self.__value._fields:
             l.append(getattr(self.__value, i))
         return pack(self.__size, *l)
@@ -835,4 +835,4 @@ class Node(object):
     def __init__(self, n, s):
         self.id = n
         self.title = s
-        self.children = []
+        self.children = collections.deque()

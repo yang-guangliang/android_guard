@@ -59,7 +59,7 @@ class Op(object):
 
 
 def get_variables(vmap, *variables):
-    res = []
+    res = collections.deque()
     for variable in variables:
         res.append(vmap.setdefault(variable, Variable(variable)))
     if len(res) == 1:
@@ -866,7 +866,7 @@ def sputshort(ins, vmap):
 
 def get_args(vmap, param_type, largs):
     num_param = 0
-    args = []
+    args = collections.deque()
     if len(param_type) > len(largs):
         logger.warning('len(param_type) > len(largs) !')
         return args

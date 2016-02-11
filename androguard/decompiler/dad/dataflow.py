@@ -316,7 +316,7 @@ class DummyNode(Node):
         super(DummyNode, self).__init__(name)
 
     def get_loc_with_ins(self):
-        return []
+        return collections.deque()
 
     def __repr__(self):
         return '%s-dumnode' % self.name

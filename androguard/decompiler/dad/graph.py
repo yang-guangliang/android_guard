@@ -31,7 +31,7 @@ class Graph(object):
         self.entry = None
         self.exit = None
         self.nodes = list()
-        self.rpo = []
+        self.rpo = collections.deque()
         self.edges = defaultdict(list)
         self.catch_edges = defaultdict(list)
         self.reverse_edges = defaultdict(list)
@@ -40,17 +40,17 @@ class Graph(object):
         self.loc_to_node = None
 
     def sucs(self, node):
-        return self.edges.get(node, [])
+        return self.edges.get(node, collections.deque())
 
     def all_sucs(self, node):
-        return self.edges.get(node, []) + self.catch_edges.get(node, [])
+        return self.edges.get(node, collections.deque()) + self.catch_edges.get(node, collections.deque())
 
     def preds(self, node):
-        return [n for n in self.reverse_edges.get(node, []) if not n.in_catch]
+        return [n for n in self.reverse_edges.get(node, collections.deque()) if not n.in_catch]
 
     def all_preds(self, node):
-        return (self.reverse_edges.get(node, []) + self.reverse_catch_edges.get(
-            node, []))
+        return (self.reverse_edges.get(node, collections.deque()) + self.reverse_catch_edges.get(
+            node, collections.deque()))
 
     def add_node(self, node):
         self.nodes.append(node)
@@ -72,19 +72,19 @@ class Graph(object):
             lpreds.append(e1)
 
     def remove_node(self, node):
-        preds = self.reverse_edges.get(node, [])
+        preds = self.reverse_edges.get(node, collections.deque())
         for pred in preds:
             self.edges[pred].remove(node)
 
-        succs = self.edges.get(node, [])
+        succs = self.edges.get(node, collections.deque())
         for suc in succs:
             self.reverse_edges[suc].remove(node)
 
-        exc_preds = self.reverse_catch_edges.pop(node, [])
+        exc_preds = self.reverse_catch_edges.pop(node, collections.deque())
         for pred in exc_preds:
             self.catch_edges[pred].remove(node)
 
-        exc_succs = self.catch_edges.pop(node, [])
+        exc_succs = self.catch_edges.pop(node, collections.deque())
         for suc in exc_succs:
             self.reverse_catch_edges[suc].remove(node)
 
@@ -162,7 +162,7 @@ class Graph(object):
             else:
                 for suc in self.sucs(node):
                     g.add_edge(Edge(str(node), str(suc), color='blue'))
-            for except_node in self.catch_edges.get(node, []):
+            for except_node in self.catch_edges.get(node, collections.deque()):
                 g.add_edge(Edge(str(node),
                                 str(except_node),
                                 color='black',
@@ -229,7 +229,7 @@ def split_if_nodes(graph):
 
                 # We link all the exceptions to the pre node instead of the
                 # condition node, which should not trigger any of them.
-                for suc in graph.catch_edges.get(node, []):
+                for suc in graph.catch_edges.get(node, collections.deque()):
                     graph.add_catch_edge(pre_node, node_map[suc])
 
                 if node is graph.entry:
@@ -294,7 +294,7 @@ def simplify(graph):
                     new_suc = graph.sucs(suc)[0]
                     if new_suc:
                         graph.add_edge(node, new_suc)
-                    for exception_suc in graph.catch_edges.get(suc, []):
+                    for exception_suc in graph.catch_edges.get(suc, collections.deque()):
                         graph.add_catch_edge(node, exception_suc)
                     redo = True
                     graph.remove_node(suc)
@@ -454,7 +454,7 @@ def construct(start_block, vmap, exceptions):
     # Construction of a mapping of basic blocks into Nodes
     block_to_node = {}
 
-    exceptions_start_block = []
+    exceptions_start_block = collections.deque()
     for exception in exceptions:
         for _, _, block in exception.exceptions:
             exceptions_start_block.append(block)

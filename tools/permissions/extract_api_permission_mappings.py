@@ -128,7 +128,7 @@ if os.path.exists(api_specific_mappings_module_path):
 print "Reading method mapping file..."
 pscout_method_mapping_filepath = os.path.join(PATH_TO_PSCOUT_FOLDER,
                                               PSCOUT_METHOD_MAPPING_FILENAME)
-methods_mapping_file_lines = []
+methods_mapping_file_lines = collections.deque()
 with open(pscout_method_mapping_filepath, 'r') as pscout_file:
     methods_mapping_file_lines = pscout_file.readlines()
 
@@ -167,7 +167,7 @@ for line in methods_mapping_file_lines:
 print "Reading contentproviderfield mapping file..."
 pscout_contentproviderfields_mapping_filepath = os.path.join(
     PATH_TO_PSCOUT_FOLDER, PSCOUT_CONTENTPROVIDERFIELDS_MAPPING_FILENAME)
-contentproviderfields_mapping_file_lines = []
+contentproviderfields_mapping_file_lines = collections.deque()
 with open(pscout_contentproviderfields_mapping_filepath, 'r') as pscout_file:
     contentproviderfields_mapping_file_lines = pscout_file.readlines()
 

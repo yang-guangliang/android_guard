@@ -3,7 +3,7 @@ PERMISSIONS_BY_HAND = {
         "android.telephony.SmsManager": [
             ["F", "getDefault()", "static SmsManager"],
             ["F",
-             "sendDataMessage(java.lang.String, java.lang.String, short, byte[], PendingIntent, PendingIntent)",
+             "sendDataMessage(java.lang.String, java.lang.String, short, bytecollections.deque(), PendingIntent, PendingIntent)",
              "void"],
             #                        [ "F", "sendMultipartTextMessage(String destinationAddress, String scAddress, ArrayList<String> parts, ArrayList<PendingIntent> sentIntents, ArrayList<PendingIntent> deliveryIntents", "void" ],
             ["F",
@@ -13,7 +13,7 @@ PERMISSIONS_BY_HAND = {
         "android.telephony.gsm.SmsManager": [
             ["F", "getDefault()", "static android.telephony.gsm.SmsManager"],
             ["F",
-             "sendDataMessage(java.lang.String, java.lang.String, short, byte[], PendingIntent, PendingIntent)",
+             "sendDataMessage(java.lang.String, java.lang.String, short, bytecollections.deque(), PendingIntent, PendingIntent)",
              "void"],
             #                        [ "F", "sendMultipartTextMessage(String destinationAddress, String scAddress, ArrayList<String> parts, ArrayList<PendingIntent> sentIntents, ArrayList<PendingIntent> deliveryIntents", "void" ],
             ["F",

@@ -1277,7 +1277,7 @@ DVM_PERMISSIONS_BY_PERMISSION = {
             ("F", "disableForegroundDispatch", "(Landroid/app/Activity;)"),
             ("F", "disableForegroundNdefPush", "(Landroid/app/Activity;)"),
             ("F", "enableForegroundDispatch",
-             "(Landroid/app/Activity; Landroid/app/PendingIntent; [Landroid/content/IntentFilter; [[Ljava/lang/String[];)"
+             "(Landroid/app/Activity; Landroid/app/PendingIntent; [Landroid/content/IntentFilter; [[Ljava/lang/Stringcollections.deque();)"
   ),
             ("F", "enableForegroundNdefPush",
              "(Landroid/app/Activity; Landroid/nfc/NdefMessage;)"),
@@ -4421,7 +4421,7 @@ DVM_PERMISSIONS_BY_ELEMENT = {
     "NFC",
     "Landroid/nfc/NfcAdapter;-disableForegroundNdefPush-(Landroid/app/Activity;)":
     "NFC",
-    "Landroid/nfc/NfcAdapter;-enableForegroundDispatch-(Landroid/app/Activity; Landroid/app/PendingIntent; [Landroid/content/IntentFilter; [[Ljava/lang/String[];)":
+    "Landroid/nfc/NfcAdapter;-enableForegroundDispatch-(Landroid/app/Activity; Landroid/app/PendingIntent; [Landroid/content/IntentFilter; [[Ljava/lang/Stringcollections.deque();)":
     "NFC",
     "Landroid/nfc/NfcAdapter;-enableForegroundNdefPush-(Landroid/app/Activity; Landroid/nfc/NdefMessage;)":
     "NFC",

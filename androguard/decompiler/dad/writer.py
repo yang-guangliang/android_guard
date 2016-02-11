@@ -33,8 +33,8 @@ class Writer(object):
         self.method = method
         self.visited_nodes = set()
         self.ind = 4
-        self.buffer = []
-        self.buffer2 = []
+        self.buffer = collections.deque()
+        self.buffer2 = collections.deque()
         self.loop_follow = [None]
         self.if_follow = [None]
         self.switch_follow = [None]
@@ -136,7 +136,7 @@ class Writer(object):
         ins.visit(self)
 
     def write_method(self):
-        acc = []
+        acc = collections.deque()
         access = self.method.access
         self.constructor = False
         for modifier in access:
@@ -589,7 +589,7 @@ class Writer(object):
         array.visit(self)
         self.write(' = {', data="ARRAY_FILLED")
         data = value.get_data()
-        tab = []
+        tab = collections.deque()
         elem_size = value.element_width
         if elem_size == 4:
             for i in range(0, value.size * 4, 4):

@@ -111,13 +111,20 @@ MATH_DVM_OPCODES = {
 # FIELD_WRITE_DVM_OPCODES = [".put"]
 # BREAK_DVM_OPCODES = ["invoke.", "move.", ".put", "if."]
 
-# BRANCH_DVM_OPCODES = ["throw", "throw.", "if.", "goto", "goto.", "return", "return.", "packed-switch$", "sparse-switch$"]
-BRANCH_DVM_OPCODES = set(["throw",
-                          "if-eq", "if-ne", "if-lt", "if-ge", "if-gt", "if-le",
-                          "if-eqz", "if-nez", "if-ltz", "if-gez", "if-gtz", "if-lez",
-                          "goto", "goto/16", "goto/32",
-                          "return-void", "return", "return-wide", "return-object",
-                          "packed-switch", "sparse-switch"])
+BRANCH_DVM_OPCODES = ["throw", "throw.", "if.", "goto", "goto.", "return", "return.", "packed-switch$", "sparse-switch$"]
+# BRANCH_DVM_OPCODES = set(["throw",
+#                           "if-eq", "if-ne", "if-lt", "if-ge", "if-gt", "if-le",
+#                           "if-eqz", "if-nez", "if-ltz", "if-gez", "if-gtz", "if-lez",
+#                           "goto", "goto/16", "goto/32",
+#                           "return-void", "return", "return-wide", "return-object",
+#                           "packed-switch", "sparse-switch"])
+
+BRANCH_DVM_OPCODES2 = set([0x27, 0xed, 0xffff, # throw
+                           0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, # if
+                           0x28, 0x29, 0x2a, # goto
+                           0x0e, 0x0f, 0x10, 0x11, 0xf1, # return
+                           0x2b, 0x2c, 0x0100, 0x0200,    # switch
+])
 
 KIND_DEFAULT = -1
 KIND_METH = 0
@@ -175,7 +182,7 @@ def get_type(atype, size=None):
             res = atype[1:-1].replace('/', '.')
         elif atype[0] == '[':
             if size is None:
-                res = '%s[]' % get_type(atype[1:])
+                res = '%scollections.deque()' % get_type(atype[1:])
             else:
                 res = '%s[%s]' % (get_type(atype[1:]), size)
         else:
@@ -2454,12 +2461,16 @@ class MethodIdItem(object):
 
         # These will be used in the future
         self.code = None
-        self.is_state = IS_STATIC_DEFAULT
+        self.is_state = None
 
     def reload(self):
         self.class_idx_value = self.CM.get_type(self.class_idx)
         self.proto_idx_value = self.CM.get_proto(self.proto_idx)
         self.name_idx_value = self.CM.get_string(self.name_idx)
+
+        self.name = self.name_idx_value
+        self.proto = self.proto_idx_value
+        self.class_name = self.class_idx_value
 
     def get_class_idx(self):
         """
@@ -2866,7 +2877,7 @@ class EncodedMethod(object):
         self.notes = collections.deque()
 
         # to be used in the future
-        self.is_static = IS_STATIC_DEFAULT
+        self.is_static = ((self.get_access_flags() & 0x8) != 0)
         self.annotation = None     # to save the annotation
         self.real_invocations = {} # to save all real invocation of `invoke-virtual`
 
@@ -2933,6 +2944,7 @@ class EncodedMethod(object):
 
         self.code = self.CM.get_code(self.code_off)
 
+
     def get_locals(self):
         ret = self.proto.split(')')
         params = ret[0][1:].split()
@@ -2944,9 +2956,6 @@ class EncodedMethod(object):
         if self.code:
             nb = self.code.get_registers_size()
             proto = self.get_descriptor()
-
-            ret = proto.split(')')
-            params = ret[0][1:].split()
 
             ret = proto.split(')')
             params = ret[0][1:].split()
@@ -3964,7 +3973,7 @@ def get_kind(cm, kind, value, flag = PRINT_INSTRUCTION_DETAILS_FLAG):
     """
 
     if not flag:
-            return ""
+            return None
 
     if kind == KIND_METH:
         method = cm.get_method_ref(value)
@@ -3975,7 +3984,8 @@ def get_kind(cm, kind, value, flag = PRINT_INSTRUCTION_DETAILS_FLAG):
         return "%s->%s%s" % (class_name, name, descriptor)
 
     elif kind == KIND_STRING:
-        return repr(cm.get_string(value))
+        # return repr(cm.get_string(value))
+            return cm.get_string(value)
 
     elif kind == KIND_RAW_STRING:
         return cm.get_string(value)
@@ -4014,6 +4024,9 @@ class Instruction(object):
     def __init__(self):
             self.idx = -1
             self.cm = None
+
+    def __repr__(self):
+            return str(self.idx) + " " + self.get_name() + "  " + self.get_output()
 
     def get_idx(self):
             return self.idx
@@ -4784,7 +4797,7 @@ class ConstString(Instruction21c):
         return self.value
 
     def get_operands(self):
-        return [(0, 1), (257, 2113, "'%s'" % self.value)]
+        return [(0, 1), (257, 2113, "%s" % self.value)]
 
 class Instruction21s(Instruction):
     """
@@ -5502,7 +5515,7 @@ class Instruction3rc(Instruction):
                     (self.get_kind() + OPERAND_KIND, self.BBBB, kind)]
         else:
             l = collections.deque()
-            for i in range(self.CCCC, self.NNNN):
+            for i in range(self.CCCC, self.NNNN + 1):
                 l.append((OPERAND_REGISTER, i))
 
             l.append((self.get_kind() + OPERAND_KIND, self.BBBB, kind))
@@ -5778,7 +5791,7 @@ class Instruction3rmi(Instruction):
                     (self.get_kind() + OPERAND_KIND, self.BBBB, kind)]
         else:
             l = collections.deque()
-            for i in range(self.CCCC, self.NNNN):
+            for i in range(self.CCCC, self.NNNN + 1):
                 l.append((OPERAND_REGISTER, i))
 
             l.append((self.get_kind() + OPERAND_KIND, self.BBBB, kind))
@@ -5833,7 +5846,7 @@ class Instruction3rms(Instruction):
                     (self.get_kind() + OPERAND_KIND, self.BBBB, kind)]
         else:
             l = collections.deque()
-            for i in range(self.CCCC, self.NNNN):
+            for i in range(self.CCCC, self.NNNN + 1):
                 l.append((OPERAND_REGISTER, i))
 
             l.append((self.get_kind() + OPERAND_KIND, self.BBBB, kind))
@@ -5999,7 +6012,7 @@ class Instruction5rc(Instruction):
                     (self.get_kind() + OPERAND_KIND, self.BBBB, kind)]
         else:
             l = collections.deque()
-            for i in range(self.CCCC, self.NNNN):
+            for i in range(self.CCCC, self.NNNN + 1):
                 l.append((OPERAND_REGISTER, i))
 
             l.append((self.get_kind() + OPERAND_KIND, self.BBBB, kind))

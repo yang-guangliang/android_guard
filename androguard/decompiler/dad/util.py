@@ -105,7 +105,7 @@ def build_path(graph, node1, node2, path=None):
     included in the path.
     '''
     if path is None:
-        path = []
+        path = collections.deque()
     if node1 is node2:
         return path
     path.append(node2)
@@ -180,7 +180,7 @@ def get_type(atype, size=None):
                 res = atype[1:-1].replace('/', '.')
         elif atype[0] == '[':
             if size is None:
-                res = '%s[]' % get_type(atype[1:])
+                res = '%scollections.deque()' % get_type(atype[1:])
             else:
                 res = '%s[%s]' % (get_type(atype[1:]), size)
         else:
@@ -196,7 +196,7 @@ def get_params_type(descriptor):
     params = descriptor.split(')')[0][1:].split()
     if params:
         return [param for param in params]
-    return []
+    return collections.deque()
 
 
 def create_png(cls_name, meth_name, graph, dir_name='graphs2'):

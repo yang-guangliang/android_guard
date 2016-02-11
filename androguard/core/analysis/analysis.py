@@ -35,8 +35,8 @@ class DVMBasicBlock(object):
         self.last_length = 0
         self.nb_instructions = 0
 
-        self.fathers = []
-        self.childs = []
+        self.fathers = collections.deque()
+        self.childs = collections.deque()
 
         self.start = start
         self.end = self.start
@@ -46,9 +46,9 @@ class DVMBasicBlock(object):
         self.name = "%s-BB@0x%x" % (self.method.get_name(), self.start)
         self.exception_analysis = None
 
-        self.notes = []
+        self.notes = collections.deque()
 
-        self.instructions = []
+        self.instructions = collections.deque()
 
     def get_notes(self):
         return self.notes
@@ -60,7 +60,7 @@ class DVMBasicBlock(object):
         self.notes.append(note)
 
     def clear_notes(self):
-        self.notes = []
+        self.notes = collections.deque()
 
     def get_instructions(self):
         """
@@ -71,7 +71,7 @@ class DVMBasicBlock(object):
         if len(self.instructions) != 0:
                 return self.instructions
 
-        self.instructions = []
+        self.instructions = collections.deque()
         idx = 0
         for i in self.method.get_instructions():
             if idx >= self.start and idx < self.end:
@@ -122,7 +122,7 @@ class DVMBasicBlock(object):
 
     def set_childs(self, values):
         #print self, self.start, self.end, values
-        if values == []:
+        if values == collections.deque():
             next_block = self.context.get_basic_block(self.end + 1)
             if next_block != None:
                 self.childs.append((self.end - self.get_last_length(), self.end,
@@ -342,7 +342,7 @@ class ExceptionAnalysis(object):
         return buff[:-1]
 
     def get(self):
-        d = {"start": self.start, "end": self.end, "list": []}
+        d = {"start": self.start, "end": self.end, "list": collections.deque()}
 
         for i in self.exceptions:
             d["list"].append({"name": i[0], "idx": i[1], "bb": i[2].get_name()})
@@ -354,7 +354,7 @@ class Exceptions(object):
 
     def __init__(self, _vm):
         self.__vm = _vm
-        self.exceptions = []
+        self.exceptions = collections.deque()
 
     def add(self, exceptions, basic_blocks):
         for i in exceptions:
@@ -379,10 +379,10 @@ class Exceptions(object):
             yield i
 
 
-# BasicOPCODES = []
+# BasicOPCODES = collections.deque()
 # for i in dvm.BRANCH_DVM_OPCODES:
 #     BasicOPCODES.append(re.compile(i))
-BasicOPCODES = dvm.BRANCH_DVM_OPCODES
+BasicOPCODES = dvm.BRANCH_DVM_OPCODES2
 
 
 class MethodAnalysis(object):
@@ -410,18 +410,18 @@ class MethodAnalysis(object):
         ##########################################################
 
         bc = code.get_bc()
-        l = []
+        l = collections.deque()
         h = {}
         idx = 0
 
         debug("Parsing instructions")
         instructions = [i for i in bc.get_instructions()]
         for i in instructions:
-                if i.get_name() in BasicOPCODES:
+                if i.get_op_value() in BasicOPCODES:
                         v = dvm.determineNext(i, idx, self.method)
                         h[idx] = v
                         l.extend(v)
-                        break
+                        # break
 
                 idx += i.get_length()
 
@@ -463,7 +463,7 @@ class MethodAnalysis(object):
             try:
                 i.set_childs(h[i.end - i.get_last_length()])
             except KeyError:
-                i.set_childs([])
+                i.set_childs(collections.deque())
 
         debug("Creating exceptions")
 

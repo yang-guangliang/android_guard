@@ -91,7 +91,7 @@ def derived_sequence(graph):
     node (if the graph is not irreducible)
     '''
     deriv_seq = [graph]
-    deriv_interv = []
+    deriv_interv = collections.deque()
     single_node = False
 
     while not single_node:
@@ -184,7 +184,7 @@ def loop_struct(graphs_list, intervals_list):
     for i, graph in enumerate(graphs_list):
         interval = intervals_list[i]
         for head in sorted(interval.keys(), key=lambda x: x.num):
-            loop_nodes = []
+            loop_nodes = collections.deque()
             for node in graph.all_preds(head):
                 if node.interval is head.interval:
                     lnodes = mark_loop(first_graph, head, node, head.interval)
@@ -198,9 +198,9 @@ def if_struct(graph, idoms):
     unresolved = set()
     for node in graph.post_order():
         if node.type.is_cond:
-            ldominates = []
+            ldominates = collections.deque()
             for n, idom in idoms.iteritems():
-                if node is idom and len(graph.reverse_edges.get(n, [])) > 1:
+                if node is idom and len(graph.reverse_edges.get(n, collections.deque())) > 1:
                     ldominates.append(n)
             if len(ldominates) > 0:
                 n = max(ldominates, key=lambda x: x.num)
@@ -222,7 +222,7 @@ def switch_struct(graph, idoms):
             for suc in graph.sucs(node):
                 if idoms[suc] is not node:
                     m = common_dom(idoms, node, suc)
-            ldominates = []
+            ldominates = collections.deque()
             for n, dom in idoms.iteritems():
                 if m is dom and len(graph.all_preds(n)) > 1:
                     ldominates.append(n)
@@ -415,7 +415,7 @@ def identify_structures(graph, idoms):
     while_block_struct(graph, node_map)
     update_dom(idoms, node_map)
 
-    loop_starts = []
+    loop_starts = collections.deque()
     for node in graph.rpo:
         node.update_attribute_with(node_map)
         if node.startloop:

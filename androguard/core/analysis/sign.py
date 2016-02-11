@@ -31,7 +31,7 @@ class Sign(object):
 
     def __init__(self):
         self.levels = {}
-        self.hlevels = []
+        self.hlevels = collections.deque()
 
     def add(self, level, value):
         self.levels[level] = value
@@ -87,7 +87,7 @@ class Signature(object):
                              m1.get_descriptor())
 
     def _get_sequence_bb(self, analysis_method):
-        l = []
+        l = collections.deque()
 
         for i in analysis_method.basic_blocks.get():
             buff = ""
@@ -113,13 +113,13 @@ class Signature(object):
         return buff
 
     def _get_bb(self, analysis_method, functions, options):
-        bbs = []
+        bbs = collections.deque()
         for b in analysis_method.basic_blocks.get():
-            l = []
+            l = collections.deque()
             l.append((b.start, "B"))
             l.append((b.start, "["))
 
-            internal = []
+            internal = collections.deque()
 
             op_value = b.get_last().get_op_value()
 
@@ -212,7 +212,7 @@ class Signature(object):
         return buff
 
     def _get_strings_pa(self, analysis_method):
-        l = []
+        l = collections.deque()
 
         strings_method = self.tainted_variables.get_strings_by_method(
             analysis_method.get_method())
@@ -226,7 +226,7 @@ class Signature(object):
         if key in self._global_cached:
             return self._global_cached[key]
 
-        l = []
+        l = collections.deque()
 
         strings_method = self.tainted_variables.get_strings_by_method(
             analysis_method.get_method())
@@ -244,7 +244,7 @@ class Signature(object):
 
         fields_method = self.tainted_variables.get_fields_by_method(
             analysis_method.get_method())
-        l = []
+        l = collections.deque()
 
         for f in fields_method:
             for path in fields_method[f]:
@@ -256,7 +256,7 @@ class Signature(object):
     def _get_packages_a(self, analysis_method):
         packages_method = self.tainted_packages.get_packages_by_method(
             analysis_method.get_method())
-        l = []
+        l = collections.deque()
 
         for m in packages_method:
             for path in packages_method[m]:
@@ -279,7 +279,7 @@ class Signature(object):
         if self.classes_names == None:
             self.classes_names = analysis_method.get_vm().get_classes_names()
 
-        l = []
+        l = collections.deque()
 
         for m in packages_method:
             for path in packages_method[m]:
@@ -319,7 +319,7 @@ class Signature(object):
         packages_method = self.tainted_packages.get_packages_by_method(
             analysis_method.get_method())
 
-        l = []
+        l = collections.deque()
 
         for m in packages_method:
             for path in packages_method[m]:
@@ -366,7 +366,7 @@ class Signature(object):
                 try:
                     _arguments = signature_arguments[i]["arguments"]
                 except KeyError:
-                    _arguments = []
+                    _arguments = collections.deque()
 
                 value = self._get_bb(analysis_method, _type, _arguments)
                 s.add(i, ''.join(z for z in value))
@@ -375,7 +375,7 @@ class Signature(object):
                 try:
                     _arguments = signature_arguments[i]["arguments"]
                 except KeyError:
-                    _arguments = []
+                    _arguments = collections.deque()
 
                 value = self._get_packages(analysis_method, _arguments)
                 s.add(i, value)

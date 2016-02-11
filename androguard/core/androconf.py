@@ -341,7 +341,7 @@ def interpolate_tuple(startcolor, goalcolor, steps):
     DiffG = targetG - G
     DiffB = targetB - B
 
-    buffer = []
+    buffer = collections.deque()
 
     for i in range(0, steps + 1):
         iR = R + (DiffR * i / steps)

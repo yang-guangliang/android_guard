@@ -76,7 +76,7 @@ class DecompilerDex2Jad(object):
                  bin_jad="jad",
                  tmp_dir="/tmp/"):
         self.classes = {}
-        self.classes_failed = []
+        self.classes_failed = collections.deque()
 
         pathtmp = tmp_dir
         if not os.path.exists(pathtmp):
@@ -101,7 +101,7 @@ class DecompilerDex2Jad(object):
         os.unlink(fdname + "_dex2jar.jar")
 
         for root, dirs, files in os.walk(pathclasses, followlinks=True):
-            if files != []:
+            if files != collections.deque():
                 for f in files:
                     real_filename = root
                     if real_filename[-1] != "/":
@@ -170,7 +170,7 @@ class DecompilerDex2WineJad(object):
                  bin_jad="jad",
                  tmp_dir="/tmp/"):
         self.classes = {}
-        self.classes_failed = []
+        self.classes_failed = collections.deque()
 
         pathtmp = tmp_dir
         if not os.path.exists(pathtmp):
@@ -195,7 +195,7 @@ class DecompilerDex2WineJad(object):
         os.unlink(fdname + "_dex2jar.jar")
 
         for root, dirs, files in os.walk(pathclasses, followlinks=True):
-            if files != []:
+            if files != collections.deque():
                 for f in files:
                     real_filename = root
                     if real_filename[-1] != "/":
@@ -262,7 +262,7 @@ class DecompilerDed(object):
                  bin_ded="ded.sh",
                  tmp_dir="/tmp/"):
         self.classes = {}
-        self.classes_failed = []
+        self.classes_failed = collections.deque()
 
         pathtmp = tmp_dir
         if not os.path.exists(pathtmp):
@@ -282,7 +282,7 @@ class DecompilerDed(object):
 
         findsrc = None
         for root, dirs, files in os.walk(dirname + "/optimized-decompiled/"):
-            if dirs != []:
+            if dirs != collections.deque():
                 for f in dirs:
                     if f == "src":
                         findsrc = root
@@ -347,7 +347,7 @@ class DecompilerDex2Fernflower(object):
                                      "asc": '1'},
                  tmp_dir="/tmp/"):
         self.classes = {}
-        self.classes_failed = []
+        self.classes_failed = collections.deque()
 
         pathtmp = tmp_dir
         if not os.path.exists(pathtmp):
@@ -372,7 +372,7 @@ class DecompilerDex2Fernflower(object):
         os.unlink(fdname + "_dex2jar.jar")
 
         for root, dirs, files in os.walk(pathclasses, followlinks=True):
-            if files != []:
+            if files != collections.deque():
                 for f in files:
                     real_filename = root
                     if real_filename[-1] != "/":
@@ -448,9 +448,9 @@ class MethodFilter(Filter):
         self.get_desc = True  #False
 
     def filter(self, lexer, stream):
-        a = []
-        l = []
-        rep = []
+        a = collections.deque()
+        l = collections.deque()
+        rep = collections.deque()
 
         for ttype, value in stream:
             if self.method_name == value and (ttype is Token.Name.Function or
@@ -477,7 +477,7 @@ class MethodFilter(Filter):
 
                 if item_end != -1:
                     rep.extend(l[:item_end + 1])
-                    l = []
+                    l = collections.deque()
                     self.present = False
 
             if self.present:

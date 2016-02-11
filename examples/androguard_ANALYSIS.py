@@ -75,7 +75,7 @@ def display_SEARCH_METHODS(a, x, classes, package_name, method_name,
 
 def display_PERMISSION(a, x, classes):
     # Show methods used by permission
-    perms_access = x.get_tainted_packages().get_permissions([])
+    perms_access = x.get_tainted_packages().get_permissions(collections.deque())
     for perm in perms_access:
         print "PERM : ", perm
         analysis.show_Paths(a, perms_access[perm])

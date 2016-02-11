@@ -49,7 +49,7 @@ class IRForm(object):
         return False
 
     def get_used_vars(self):
-        return []
+        return collections.deque()
 
     def replace(self, old, new):
         raise NotImplementedError('replace not implemented in %r' % self)
@@ -64,7 +64,7 @@ class IRForm(object):
         pass
 
     def get_rhs(self):
-        return []
+        return collections.deque()
 
     def get_lhs(self):
         return None
@@ -87,7 +87,7 @@ class Constant(IRForm):
         self.clsdesc = descriptor
 
     def get_used_vars(self):
-        return []
+        return collections.deque()
 
     def is_const(self):
         return True
@@ -504,7 +504,7 @@ class NewInstance(IRForm):
         return self.type
 
     def get_used_vars(self):
-        return []
+        return collections.deque()
 
     def visit(self, visitor):
         return visitor.visit_new(self.type, data=self)
@@ -547,7 +547,7 @@ class InvokeInstruction(IRForm):
     def replace_var(self, old, new):
         if self.base == old:
             self.base = new.v
-        new_args = []
+        new_args = collections.deque()
         for arg in self.args:
             if arg != old:
                 new_args.append(arg)
@@ -568,7 +568,7 @@ class InvokeInstruction(IRForm):
                     v_m[new.value()] = new
                     if self.base == old:
                         self.base = new.value()
-                    new_args = []
+                    new_args = collections.deque()
                     for arg in self.args:
                         if arg != old:
                             new_args.append(arg)
@@ -588,7 +588,7 @@ class InvokeInstruction(IRForm):
 
     def get_used_vars(self):
         v_m = self.var_map
-        lused_vars = []
+        lused_vars = collections.deque()
         for arg in self.args:
             lused_vars.extend(v_m[arg].get_used_vars())
         lused_vars.extend(v_m[self.base].get_used_vars())
@@ -629,7 +629,7 @@ class InvokeStaticInstruction(InvokeInstruction):
 
     def get_used_vars(self):
         v_m = self.var_map
-        lused_vars = []
+        lused_vars = collections.deque()
         for arg in self.args:
             lused_vars.extend(v_m[arg].get_used_vars())
         return list(set(lused_vars))
@@ -646,7 +646,7 @@ class ReturnInstruction(IRForm):
 
     def get_used_vars(self):
         if self.arg is None:
-            return []
+            return collections.deque()
         return self.var_map[self.arg].get_used_vars()
 
     def get_lhs(self):
@@ -687,7 +687,7 @@ class NopExpression(IRForm):
         pass
 
     def get_used_vars(self):
-        return []
+        return collections.deque()
 
     def get_lhs(self):
         return None
@@ -915,19 +915,19 @@ class FilledArrayExpression(ArrayExpression):
         super(FilledArrayExpression, self).__init__()
         self.size = asize
         self.type = atype
-        self.args = []
+        self.args = collections.deque()
         for arg in args:
             self.var_map[arg.v] = arg
             self.args.append(arg.v)
 
     def get_used_vars(self):
-        lused_vars = []
+        lused_vars = collections.deque()
         for arg in self.args:
             lused_vars.extend(self.var_map[arg].get_used_vars())
         return list(set(lused_vars))
 
     def replace_var(self, old, new):
-        new_args = []
+        new_args = collections.deque()
         for arg in self.args:
             if arg == old:
                 new_args.append(new.v)
@@ -946,7 +946,7 @@ class FilledArrayExpression(ArrayExpression):
             else:
                 if new.is_ident():
                     v_m[new.value()] = new
-                    new_args = []
+                    new_args = collections.deque()
                     for arg in self.args:
                         if arg == old:
                             new_args.append(new.v)
@@ -1050,7 +1050,7 @@ class MoveExceptionExpression(RefExpression):
         return True
 
     def get_used_vars(self):
-        return []
+        return collections.deque()
 
     def replace_lhs(self, new):
         self.var_map.pop(self.ref)

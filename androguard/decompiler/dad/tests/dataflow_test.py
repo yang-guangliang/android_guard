@@ -26,7 +26,7 @@ class DataflowTest(unittest.TestCase):
             basic_blocks.BasicBlock,
             _name=node_name)
         mock_node.__repr__ = mock.Mock(return_value=node_name)
-        loc_ins = []
+        loc_ins = collections.deque()
         ins_idx = start_ins_idx
         for ins in lins:
             uses, lhs = ins
@@ -100,22 +100,22 @@ class DataflowTest(unittest.TestCase):
                 preds[suc].append(pred)
 
         def add_edge(x, y):
-            sucs.setdefault(x, []).append(y)
-            preds.setdefault(y, []).append(x)
+            sucs.setdefault(x, collections.deque()).append(y)
+            preds.setdefault(y, collections.deque()).append(x)
 
         graph_mock = mock.create_autospec(graph.Graph)
         graph_mock.entry = n1
         graph_mock.exit = n9
         graph_mock.rpo = [n1, n2, n3, n4, n5, n6, n7, n8, n9]
         graph_mock.all_preds.side_effect = lambda x: preds[x]
-        graph_mock.all_sucs.side_effect = lambda x: sucs.get(x, [])
+        graph_mock.all_sucs.side_effect = lambda x: sucs.get(x, collections.deque())
         graph_mock.add_edge.side_effect = add_edge
 
         with mock.patch.object(dataflow, 'DummyNode') as dummynode_mock:
             dummy_entry_mock = mock.Mock(name='entry')
             dummy_exit_mock = mock.Mock(name='exit')
             for dummy_mock in dummy_entry_mock, dummy_exit_mock:
-                dummy_mock.get_loc_with_ins.return_value = []
+                dummy_mock.get_loc_with_ins.return_value = collections.deque()
             dummynode_mock.side_effect = [dummy_entry_mock, dummy_exit_mock]
             analysis = dataflow.reach_def_analysis(graph_mock, set(['a', 'b']))
         expected_A = {
@@ -235,10 +235,10 @@ class DataflowTest(unittest.TestCase):
 
     @mock.patch.object(dataflow, 'reach_def_analysis')
     def testDefUseIfBool(self, mock_reach_def):
-        n1 = self._CreateMockNode('n1', 0, [([], 0), ([2], None)])
+        n1 = self._CreateMockNode('n1', 0, [(collections.deque(), 0), ([2], None)])
         n2 = self._CreateMockNode('n1', 2, [([3], None)])
         n3 = self._CreateMockNode('n3', 3, [([3], None)])
-        n4 = self._CreateMockNode('n4', 4, [([], 0)])
+        n4 = self._CreateMockNode('n4', 4, [(collections.deque(), 0)])
         n5 = self._CreateMockNode('n5', 5, [([0], 0)])
         n6 = self._CreateMockNode('n6', 6, [([2], 1), ([0, 1], 0)])
         n7 = self._CreateMockNode('n7', 8, [([0], None)])

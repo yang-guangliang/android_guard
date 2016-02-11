@@ -14,7 +14,7 @@ import hashlib
 
 
 def hexdump(src, length=8, off=0):
-    result = []
+    result = collections.deque()
     digits = 4 if isinstance(src, unicode) else 2
     for i in xrange(0, len(src), length):
         s = src[i:i + length]

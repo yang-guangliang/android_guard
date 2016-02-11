@@ -59,7 +59,7 @@ else:
 class ChilkatZip(object):
 
     def __init__(self, raw):
-        self.files = []
+        self.files = collections.deque()
         self.zip = chilkat.CkZip()
 
         self.zip.UnlockComponent(CHILKAT_KEY)
@@ -74,7 +74,7 @@ class ChilkatZip(object):
             e = e.NextEntry()
 
     def delete(self, patterns):
-        el = []
+        el = collections.deque()
 
         filename = chilkat.CkString()
         e = self.zip.FirstEntry()
@@ -167,7 +167,7 @@ class APK(object):
 
         self.package = ""
         self.androidversion = {}
-        self.permissions = []
+        self.permissions = collections.deque()
         self.declared_permissions = {}
         self.valid_apk = False
 
@@ -521,7 +521,7 @@ class APK(object):
             :param tag_name: a string which specify the tag name
             :param attribute: a string which specify the attribute
         """
-        l = []
+        l = collections.deque()
         for i in self.xml:
             for item in self.xml[i].getElementsByTagName(tag_name):
                 value = item.getAttributeNS(NS_ANDROID_URI, attribute)
@@ -632,8 +632,8 @@ class APK(object):
     def get_intent_filters(self, category, name):
         d = {}
 
-        d["action"] = []
-        d["category"] = []
+        d["action"] = collections.deque()
+        d["category"] = collections.deque()
 
         for i in self.xml:
             for item in self.xml[i].getElementsByTagName(category):
@@ -705,7 +705,7 @@ class APK(object):
 
             :rtype: list of strings
         '''
-        aosp_permissions = []
+        aosp_permissions = collections.deque()
         all_permissions = self.get_requested_permissions()
         for perm in all_permissions:
             if perm in self.permission_module["AOSP_PERMISSIONS"].keys():
@@ -733,7 +733,7 @@ class APK(object):
 
             :rtype: list of strings
         '''
-        third_party_permissions = []
+        third_party_permissions = collections.deque()
         all_permissions = self.get_requested_permissions()
         for perm in all_permissions:
             if perm not in self.permission_module["AOSP_PERMISSIONS"].keys():
@@ -876,7 +876,7 @@ class APK(object):
              Return a list of the signature file names.
         """
         signature_expr = re.compile("^(META-INF/)(.*)(\.RSA|\.EC|\.DSA)$")
-        signatures = []
+        signatures = collections.deque()
 
         for i in self.get_files():
             if signature_expr.search(i):
@@ -898,7 +898,7 @@ class APK(object):
             Return a list of the data of the signature files.
         """
         signature_expr = re.compile("^(META-INF/)(.*)(\.RSA|\.EC|\.DSA)$")
-        signature_datas = []
+        signature_datas = collections.deque()
 
         for i in self.get_files():
             if signature_expr.search(i):
@@ -986,10 +986,10 @@ class StringBlock(object):
         self.stringsOffset = unpack('<i', buff.read(4))[0]
         self.stylesOffset = unpack('<i', buff.read(4))[0]
 
-        self.m_stringOffsets = []
-        self.m_styleOffsets = []
+        self.m_stringOffsets = collections.deque()
+        self.m_styleOffsets = collections.deque()
         self.m_charbuff = ""
-        self.m_styles = []
+        self.m_styles = collections.deque()
 
         for i in range(0, self.stringCount):
             self.m_stringOffsets.append(unpack('<i', buff.read(4))[0])
@@ -1148,12 +1148,12 @@ class AXMLParser(object):
 
             self.sb = StringBlock(self.buff)
 
-            self.m_resourceIDs = []
+            self.m_resourceIDs = collections.deque()
             self.m_prefixuri = {}
             self.m_uriprefix = {}
-            self.m_prefixuriL = []
+            self.m_prefixuriL = collections.deque()
 
-            self.visited_ns = []
+            self.visited_ns = collections.deque()
         else:
             self.valid_axml = False
             androconf.warning("Not a valid xml file")
@@ -1166,7 +1166,7 @@ class AXMLParser(object):
         self.m_lineNumber = -1
         self.m_name = -1
         self.m_namespaceUri = -1
-        self.m_attributes = []
+        self.m_attributes = collections.deque()
         self.m_idAttribute = -1
         self.m_classAttribute = -1
         self.m_styleAttribute = -1
@@ -1612,7 +1612,7 @@ class ARSCParser(object):
             current_package = ARSCResTablePackage(self.buff)
             package_name = current_package.get_name()
 
-            self.packages[package_name] = []
+            self.packages[package_name] = collections.deque()
 
             mTableStrings = StringBlock(self.buff)
             mKeyStrings = StringBlock(self.buff)
@@ -1639,7 +1639,7 @@ class ARSCParser(object):
                     self.resource_configs[package_name][a_res_type].add(
                        a_res_type.config)
 
-                    entries = []
+                    entries = collections.deque()
                     for i in range(0, a_res_type.entryCount):
                         current_package.mResId = current_package.mResId & 0xffff0000 | i
                         entries.append((unpack('<i', self.buff.read(4))[0],
@@ -1686,7 +1686,7 @@ class ARSCParser(object):
                                 a_res_type.config.get_language()
                             ] = {}
                             self.values[package_name][a_res_type.config.get_language(
-                            )]["public"] = []
+                            )]["public"] = collections.deque()
 
                         c_value = self.values[package_name][
                             a_res_type.config.get_language()
@@ -1707,7 +1707,7 @@ class ARSCParser(object):
                                          ate.mResId))
 
                                 if a_res_type.get_type() not in c_value:
-                                    c_value[a_res_type.get_type()] = []
+                                    c_value[a_res_type.get_type()] = collections.deque()
 
                                 if a_res_type.get_type() == "string":
                                     c_value["string"].append(
@@ -1961,7 +1961,7 @@ class ARSCParser(object):
             self.wanted_config = config
 
         def resolve(self, res_id):
-            result = []
+            result = collections.deque()
             self._resolve_into_result(result, res_id, self.wanted_config)
             return result
 
@@ -1973,7 +1973,7 @@ class ARSCParser(object):
 
         def put_ate_value(self, result, ate, config):
             if ate.is_complex():
-                complex_array = []
+                complex_array = collections.deque()
                 result.append(config, complex_array)
                 for _, item in ate.item.items:
                     self.put_item_value(complex_array, item, config, complex_=True)
@@ -2014,7 +2014,7 @@ class ARSCParser(object):
                 return res_options.items()
 
         except KeyError:
-            return []
+            return collections.deque()
 
     def get_string(self, package_name, name, locale='\x00\x00'):
         self._analyse()
@@ -2105,7 +2105,7 @@ class ARSCResTypeSpec(object):
         self.res1 = unpack('<h', buff.read(2))[0]
         self.entryCount = unpack('<I', buff.read(4))[0]
 
-        self.typespec_entries = []
+        self.typespec_entries = collections.deque()
         for i in range(0, self.entryCount):
             self.typespec_entries.append(unpack('<I', buff.read(4))[0])
 
@@ -2299,7 +2299,7 @@ class ARSCComplex(object):
         self.id_parent = unpack('<I', buff.read(4))[0]
         self.count = unpack('<I', buff.read(4))[0]
 
-        self.items = []
+        self.items = collections.deque()
         for i in range(0, self.count):
             self.items.append((unpack('<I', buff.read(4))[0],
                                ARSCResStringPoolRef(buff, self.parent)))

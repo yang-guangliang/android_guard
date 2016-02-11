@@ -82,7 +82,7 @@ class DvMethod(object):
         self.start_block = next(methanalysis.get_basic_blocks().get(), None)
         self.cls_name = method.get_class_name()
         self.name = method.get_name()
-        self.lparams = []
+        self.lparams = collections.deque()
         self.var_to_name = defaultdict()
         self.writer = None
         self.graph = None
@@ -184,7 +184,7 @@ class DvMethod(object):
     def get_source_ext(self):
         if self.writer:
             return self.writer.str_ext()
-        return []
+        return collections.deque()
 
     def __repr__(self):
         #return 'Method %s' % self.name
@@ -205,7 +205,7 @@ class DvClass(object):
         self.vma = vma
         self.methods = dvclass.get_methods()
         self.fields = dvclass.get_fields()
-        self.code = []
+        self.code = collections.deque()
         self.inner = False
 
         access = dvclass.get_access_flags()
@@ -240,7 +240,7 @@ class DvClass(object):
             method.set_instructions([i for i in method.get_instructions()])
             self.methods[num] = DvMethod(self.vma.get_method(method))
             self.methods[num].process(doAST=doAST)
-            method.set_instructions([])
+            method.set_instructions(collections.deque())
         else:
             method.process(doAST=doAST)
 
@@ -254,7 +254,7 @@ class DvClass(object):
 
     def get_ast(self):
         fields = [get_field_ast(f) for f in self.fields]
-        methods = []
+        methods = collections.deque()
         for m in self.methods:
           if isinstance(m, DvMethod) and m.ast:
             methods.append(m.get_ast())
@@ -271,7 +271,7 @@ class DvClass(object):
         }
 
     def get_source(self):
-        source = []
+        source = collections.deque()
         if not self.inner and self.package:
             source.append('package %s;\n' % self.package)
 
@@ -311,13 +311,13 @@ class DvClass(object):
         return ''.join(source)
 
     def get_source_ext(self):
-        source = []
+        source = collections.deque()
         if not self.inner and self.package:
             source.append(
                 ('PACKAGE', [('PACKAGE_START', 'package '), (
                     'NAME_PACKAGE', '%s' % self.package), ('PACKAGE_END', ';\n')
                         ]))
-        list_proto = []
+        list_proto = collections.deque()
         list_proto.append(
             ('PROTOTYPE_ACCESS', '%s class ' % ' '.join(self.access)))
         list_proto.append(('NAME_PROTOTYPE', '%s' % self.name, self.package))
