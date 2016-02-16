@@ -2461,7 +2461,7 @@ class MethodIdItem(object):
 
         # These will be used in the future
         self.code = None
-        self.is_state = None
+        self.is_static = None
 
     def reload(self):
         self.class_idx_value = self.CM.get_type(self.class_idx)
