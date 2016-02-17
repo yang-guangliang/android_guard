@@ -2461,7 +2461,7 @@ class MethodIdItem(object):
 
         # These will be used in the future
         self.code = None
-        self.is_state = None
+        self.is_static = None
 
     def reload(self):
         self.class_idx_value = self.CM.get_type(self.class_idx)
@@ -4935,6 +4935,10 @@ class Instruction31t(Instruction):
     def __init__(self, cm, buff):
         super(Instruction31t, self).__init__()
         i16 = unpack("=H", buff[0:2])[0]
+
+        self.cm = cm
+        self.buff = buff
+
         self.OP = i16 & 0xff
         self.AA = (i16 >> 8) & 0xff
 
@@ -4969,6 +4973,7 @@ class Instruction31c(Instruction):
     def __init__(self, cm, buff):
         super(Instruction31c, self).__init__()
         self.cm = cm
+        self.buff = buff
 
         i16 = unpack("=H", buff[0:2])[0]
         self.OP = i16 & 0xff
