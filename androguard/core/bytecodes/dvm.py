@@ -2472,6 +2472,12 @@ class MethodIdItem(object):
         self.proto = self.proto_idx_value
         self.class_name = self.class_idx_value
 
+    def __hash__(self):
+            return hash((self.name, self.proto, self.class_name))
+
+    def __eq__(self, other):
+            return self.name == other.name and self.proto == other.proto and self.class_name == other.class_name
+
     def get_class_idx(self):
         """
             Return the index into the type_ids list for the definer of this method
@@ -2881,6 +2887,12 @@ class EncodedMethod(object):
         self.annotation = None     # to save the annotation
         self.real_invocations = {} # to save all real invocation of `invoke-virtual`
 
+    def __hash__(self):
+            return hash((self.name, self.proto, self.class_name))
+
+    def __eq__(self, other):
+            return self.name == other.name and self.proto == other.proto and self.class_name == other.class_name
+
     def get_vm(self):
             return self.CM.vm
 
@@ -3226,6 +3238,7 @@ class ClassDataItem(object):
         self._load_elements(self.virtual_methods_size, self.virtual_methods,
                             EncodedMethod, buff, cm)
 
+
     def get_static_fields_size(self):
         """
           Return the number of static fields defined in this item
@@ -3437,6 +3450,14 @@ class ClassDefItem(object):
         self.name = None
         self.sname = None
         self.access_flags_string = None
+
+
+    def __hash__(self):
+            return hash((self.name, self.sname))
+
+    def __eq__(self, other):
+            return self.name == other.name and self.sname == other.sname
+
 
     def reload(self):
         self.name = self.CM.get_type(self.class_idx)
