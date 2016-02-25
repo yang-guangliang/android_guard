@@ -382,7 +382,7 @@ class Exceptions(object):
 # BasicOPCODES = collections.deque()
 # for i in dvm.BRANCH_DVM_OPCODES:
 #     BasicOPCODES.append(re.compile(i))
-BasicOPCODES = dvm.BRANCH_DVM_OPCODES2
+BasicOPCODES = dvm.BRANCH_DVM_OPCODES2 | dvm.INVOKE_OPCODES
 
 
 class MethodAnalysis(object):
