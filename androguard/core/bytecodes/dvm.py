@@ -31,6 +31,7 @@ from struct import pack, unpack, calcsize
 
 PRINT_INSTRUCTION_DETAILS_FLAG  = True
 IS_STATIC_DEFAULT               = False
+DISABLE_PYTHON_EXPORT           = True
 
 ############################################################
 
@@ -8309,15 +8310,23 @@ class DalvikVMFormat(bytecode._Bytecode, DvmAnnotations):
         """
             Export classes/methods/fields' names in the python namespace
         """
+        if DISABLE_PYTHON_EXPORT:
+                return
+
         setattr(self, "C", ExportObject())
 
         for _class in self.get_classes():
             self._create_python_export_class(_class)
 
     def _delete_python_export_class(self, _class):
+        if DISABLE_PYTHON_EXPORT:
+                return
         self._create_python_export_class(_class, True)
 
     def _create_python_export_class(self, _class, delete=False):
+        if DISABLE_PYTHON_EXPORT:
+                return
+
         if _class != None:
             ### Class
             name = bytecode.FormatClassToPython(_class.get_name())
@@ -8333,6 +8342,8 @@ class DalvikVMFormat(bytecode._Bytecode, DvmAnnotations):
             self._create_python_export_fields(_class, delete)
 
     def _create_python_export_methods(self, _class, delete):
+        if DISABLE_PYTHON_EXPORT:
+                return
         m = {}
         for method in _class.get_methods():
             if method.get_name() not in m:
@@ -8370,6 +8381,8 @@ class DalvikVMFormat(bytecode._Bytecode, DvmAnnotations):
                     setattr(_class.M, name, j)
 
     def _create_python_export_fields(self, _class, delete):
+        if DISABLE_PYTHON_EXPORT:
+                return
         f = {}
         for field in _class.get_fields():
             if field.get_name() not in f:
