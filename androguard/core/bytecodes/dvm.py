@@ -127,9 +127,9 @@ BRANCH_DVM_OPCODES2 = set([0x27, 0xed, 0xffff, # throw
                            0x2b, 0x2c, 0x0100, 0x0200,    # switch
 ])
 
-INVOKE_OPCODES =  set([(0x6e, 0x6f, 0x70, 0x71, 0x72, 0x74, 0x75, 0x76, 0x77, 0x78,
-                        0xf0, 0xf8, 0xf9, 0xfa, 0xfb, 0x22ff, 0x23ff, 0x24ff,
-                        0x25ff, 0x26ff)])
+INVOKE_OPCODES =  set([0x6e, 0x6f, 0x70, 0x71, 0x72, 0x74, 0x75, 0x76, 0x77, 0x78,
+                       0xf0, 0xf8, 0xf9, 0xfa, 0xfb, 0x22ff, 0x23ff, 0x24ff,
+                       0x25ff, 0x26ff])
 
 
 KIND_DEFAULT = -1
@@ -2465,6 +2465,9 @@ class MethodIdItem(object):
         self.proto_idx_value = None
         self.name_idx_value = None
 
+        self.access_flags = 0
+        self.access_flags_string = ""
+
         # These will be used in the future
         self.code = None
         self.is_static = None
@@ -2479,10 +2482,19 @@ class MethodIdItem(object):
         self.class_name = self.class_idx_value
 
     def __hash__(self):
-            return hash((self.name, self.proto, self.class_name))
+            return hash((self.name, self.get_descriptor(), self.class_name))
 
     def __eq__(self, other):
-            return self.name == other.name and self.proto == other.proto and self.class_name == other.class_name
+            if other is None:
+                    return False
+
+            return self.name == other.name and self.get_descriptor() == other.get_descriptor() and self.class_name == other.class_name
+
+    def get_access_flags(self):
+            return self.access_flags
+
+    def get_access_flags_string(self):
+            return self.access_flags_string
 
     def get_class_idx(self):
         """
@@ -2894,10 +2906,13 @@ class EncodedMethod(object):
         self.real_invocations = {} # to save all real invocation of `invoke-virtual`
 
     def __hash__(self):
-            return hash((self.name, self.proto, self.class_name))
+            return hash((self.name, self.get_descriptor(), self.class_name))
 
     def __eq__(self, other):
-            return self.name == other.name and self.proto == other.proto and self.class_name == other.class_name
+            if other is None:
+                    return False
+
+            return self.name == other.name and self.get_descriptor() == other.get_descriptor() and self.class_name == other.class_name
 
     def get_vm(self):
             return self.CM.vm
@@ -3462,6 +3477,8 @@ class ClassDefItem(object):
             return hash((self.name, self.sname))
 
     def __eq__(self, other):
+            if other is None:
+                    return False
             return self.name == other.name and self.sname == other.sname
 
 

@@ -1621,6 +1621,10 @@ class ARSCParser(object):
             self.packages[package_name].append(mTableStrings)
             self.packages[package_name].append(mKeyStrings)
 
+            # self.current_package = current_package
+            # self.mTableStrings = mTableStrings
+            # self.mKeyStrings = mKeyStrings
+
             pc = PackageContext(current_package, self.stringpool_main,
                                 mTableStrings, mKeyStrings)
 
