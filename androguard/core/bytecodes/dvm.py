@@ -2470,7 +2470,7 @@ class MethodIdItem(object):
 
         # These will be used in the future
         self.code = None
-        self.is_static = None
+        self.is_static = IS_STATIC_DEFAULT
 
     def reload(self):
         self.class_idx_value = self.CM.get_type(self.class_idx)
@@ -2480,6 +2480,8 @@ class MethodIdItem(object):
         self.name = self.name_idx_value
         self.proto = self.proto_idx_value
         self.class_name = self.class_idx_value
+
+        self.is_static = ((self.get_access_flags() & 0x8) != 0)
 
     def __hash__(self):
             return hash((self.name, self.get_descriptor(), self.class_name))
@@ -2901,7 +2903,7 @@ class EncodedMethod(object):
         self.notes = collections.deque()
 
         # to be used in the future
-        self.is_static = ((self.get_access_flags() & 0x8) != 0)
+        self.is_static = IS_STATIC_DEFAULT
         self.annotation = None     # to save the annotation
         self.real_invocations = {} # to save all real invocation of `invoke-virtual`
 
@@ -2976,7 +2978,7 @@ class EncodedMethod(object):
         self.proto = ''.join(i for i in v[2])
 
         self.code = self.CM.get_code(self.code_off)
-
+        self.is_static = ((self.get_access_flags() & 0x8) != 0)
 
     def get_locals(self):
         ret = self.proto.split(')')
